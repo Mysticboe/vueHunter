@@ -2,8 +2,8 @@
   <main class="page-shell map-view">
     <header class="hud-bar panel">
       <div>
-        <div class="panel__eyebrow">World Map</div>
-        <h1 class="panel__title">The continent is ready for the next hunt.</h1>
+        <div class="panel__eyebrow">世界地图</div>
+        <h1 class="panel__title">新的试炼已经准备就绪。</h1>
       </div>
 
       <div class="hud-stats">
@@ -12,11 +12,11 @@
           <strong>{{ gameStore.player.hp }} / {{ gameStore.player.mp }}</strong>
         </div>
         <div class="hud-stat">
-          <span>Level</span>
+          <span>等级</span>
           <strong>{{ gameStore.player.level }}</strong>
         </div>
         <div class="hud-stat">
-          <span>EXP</span>
+          <span>经验</span>
           <strong>
             {{ gameStore.player.exp }}
             <template v-if="gameStore.nextLevelExp">
@@ -25,11 +25,11 @@
           </strong>
         </div>
         <div class="hud-stat">
-          <span>Gold</span>
+          <span>金币</span>
           <strong>{{ gameStore.player.gold }}</strong>
         </div>
         <div class="hud-stat">
-          <span>Skill points</span>
+          <span>技能点</span>
           <strong>{{ gameStore.player.skillPoints }}</strong>
         </div>
       </div>
@@ -39,14 +39,14 @@
       v-if="!gameStore.hasProgress"
       class="panel empty-panel"
     >
-      <div class="panel__eyebrow">No save loaded</div>
-      <h2 class="panel__title">Start a new run to unlock the map.</h2>
+      <div class="panel__eyebrow">未加载存档</div>
+      <h2 class="panel__title">先开始一局游戏，地图才会展开。</h2>
       <button
         type="button"
         class="button button--primary"
         @click="startFreshRun"
       >
-        Create fresh save
+        创建新存档
       </button>
     </section>
 
@@ -54,7 +54,7 @@
       v-else
       class="map-layout"
     >
-      <!-- The left column is the progression spine: quest board plus chapter cards. -->
+      <!-- 左侧是推进主线：任务看板加章节卡片。 -->
       <div class="chapter-grid">
         <QuestBoard />
 
@@ -71,10 +71,10 @@
         />
       </div>
 
-      <!-- The right column is town management: stats, review, and utility actions. -->
+      <!-- 右侧是城镇管理：属性、复盘和功能入口。 -->
       <aside class="map-sidebar">
         <section class="panel sidebar-card">
-          <div class="panel__eyebrow">Hunter Sheet</div>
+          <div class="panel__eyebrow">勇者面板</div>
           <h2 class="panel__title">{{ gameStore.player.name }}</h2>
           <StatBar
             label="HP"
@@ -90,11 +90,11 @@
           />
           <div class="summary-grid">
             <div>
-              <span>Attack</span>
+              <span>攻击</span>
               <strong>{{ gameStore.player.attack }}</strong>
             </div>
             <div>
-              <span>Defense</span>
+              <span>防御</span>
               <strong>{{ gameStore.player.defense }}</strong>
             </div>
           </div>
@@ -104,7 +104,7 @@
               class="button button--ghost"
               @click="restAtCamp"
             >
-              Rest at camp (14 gold)
+              营地休息（14 金币）
             </button>
             <small
               v-if="campMessage"
@@ -116,8 +116,8 @@
         </section>
 
         <section class="panel sidebar-card">
-          <div class="panel__eyebrow">Review Board</div>
-          <h2 class="panel__title">Recent missed prompts</h2>
+          <div class="panel__eyebrow">复盘板</div>
+          <h2 class="panel__title">最近答错的题目</h2>
           <ul
             v-if="gameStore.recentWrongQuestions.length > 0"
             class="review-list"
@@ -128,7 +128,7 @@
             >
               <strong>Q{{ entry.id }}</strong>
               <p>{{ entry.prompt }}</p>
-              <small>Missed {{ entry.count }} time(s)</small>
+              <small>答错 {{ entry.count }} 次</small>
             </li>
           </ul>
           <button
@@ -137,61 +137,61 @@
             class="button button--ghost"
             @click="router.push('/practice')"
           >
-            Practice backlog
+            进入错题练习
           </button>
           <p
-            v-else
-            class="muted-copy"
-          >
-            No missed prompts yet. Your notes are clean.
-          </p>
-        </section>
+          v-else
+          class="muted-copy"
+        >
+          暂时还没有错题，当前记录很干净。
+        </p>
+      </section>
 
-        <section class="panel sidebar-card">
-          <div class="panel__eyebrow">Town Menu</div>
-          <h2 class="panel__title">Manage your run</h2>
+      <section class="panel sidebar-card">
+          <div class="panel__eyebrow">城镇菜单</div>
+          <h2 class="panel__title">整理当前这一局</h2>
           <div class="stack-actions">
             <button
               type="button"
               class="button button--ghost"
               @click="router.push('/inventory')"
             >
-              Open inventory
+              打开背包
             </button>
             <button
               type="button"
               class="button button--ghost"
               @click="router.push('/skills')"
             >
-              Open skill tree
+              打开技能树
             </button>
             <button
               type="button"
               class="button button--ghost"
               @click="router.push('/handbook')"
             >
-              Open handbook
+              打开图鉴
             </button>
             <button
               type="button"
               class="button button--ghost"
               @click="openChapterDrill"
             >
-              Chapter drill
+              章节训练
             </button>
             <button
               type="button"
               class="button button--ghost"
               @click="router.push('/')"
             >
-              Back to home
+              返回首页
             </button>
             <button
               type="button"
               class="button button--ghost"
               @click="resetRun"
             >
-              Reset save
+              重置存档
             </button>
           </div>
         </section>
@@ -211,12 +211,12 @@ import { chapters } from "../data/chapters";
 import { enemies } from "../data/enemies";
 import { useGameStore } from "../stores/game";
 
-// The map is the main progression hub for the single-player run.
+// 地图页是单机流程里的主中枢。
 const router = useRouter();
 const gameStore = useGameStore();
 const campMessage = ref("");
 
-// Merge static chapter data with live progress so the template stays declarative.
+// 把静态章节资料和实时进度合并成直接可渲染的数据。
 const chapterCards = computed(() =>
   chapters.map((chapter) => {
     const chapterEnemies = enemies.filter((enemy) => enemy.chapterId === chapter.id);
@@ -232,7 +232,7 @@ const chapterCards = computed(() =>
   }),
 );
 
-// Suggest a drill chapter based on the next frontier, falling back to the latest unlocked area.
+// 推荐训练章节优先取当前主线目标，否则回退到最近解锁章节。
 const recommendedDrillChapterId = computed(() => {
   const targetChapterId = gameStore.nextTargetChapter?.id;
 
@@ -243,17 +243,17 @@ const recommendedDrillChapterId = computed(() => {
   return gameStore.player.unlockedChapters.at(-1) ?? 1;
 });
 
-// Fresh runs skip the home screen loop and immediately unlock the map.
+// 新开局会直接生成进度并进入地图。
 function startFreshRun() {
   gameStore.startNewGame();
 }
 
-// Encounters are route-driven, so the map only needs to push the selected enemy id.
+// 遭遇战通过路由参数驱动，这里只要带上敌人 id。
 function startBattle(enemyId) {
   router.push(`/battle/${enemyId}`);
 }
 
-// Chapter drills are launched as query-driven practice routes.
+// 章节训练通过 query 参数决定模式和章节。
 function openChapterDrill() {
   router.push({
     path: "/practice",
@@ -264,18 +264,18 @@ function openChapterDrill() {
   });
 }
 
-// Reset returns the player to the home screen after wiping the save.
+// 重置存档后回到首页重新开始。
 function resetRun() {
   gameStore.resetGame();
   router.push("/");
 }
 
-// Camp rest is duplicated here for quick between-battle recovery.
+// 营地休息也放在地图页，方便战斗间快速补满。
 function restAtCamp() {
   const rested = gameStore.restAtCamp();
 
   campMessage.value = rested
-    ? "You feel refreshed and ready for the next chapter."
-    : "You need at least 14 gold to rest.";
+    ? "状态已经恢复，继续出发吧。"
+    : "金币不足 14，暂时不能休息。";
 }
 </script>

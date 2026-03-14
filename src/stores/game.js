@@ -9,7 +9,7 @@ import { clearGameSave, loadGame, saveGame } from "../utils/save";
 
 const CAMP_REST_COST = 14;
 
-// Small stat helpers keep level, gear, and skills composable.
+// 小型属性工具函数用于把等级、装备和技能加成统一组合。
 function createStatBlock() {
   return {
     maxHp: 0,
@@ -19,7 +19,7 @@ function createStatBlock() {
   };
 }
 
-// Merge stat sources into one final combat-ready block.
+// 把多种属性来源合并成最终可用于战斗的面板值。
 function mergeStatBlocks(base, bonus = {}) {
   return {
     maxHp: base.maxHp + (bonus.maxHp ?? 0),
@@ -29,7 +29,7 @@ function mergeStatBlocks(base, bonus = {}) {
   };
 }
 
-// Save files may contain old inventory shapes, so normalize everything here first.
+// 老存档里背包结构可能不同，因此先做一次统一格式化。
 function normalizeInventory(entries) {
   if (!Array.isArray(entries)) {
     return [];
@@ -60,7 +60,7 @@ function normalizeInventory(entries) {
   }));
 }
 
-// Equipment used to be stored as arrays, so this keeps backward compatibility.
+// 兼容旧版本里以数组形式保存的装备数据。
 function normalizeEquippedItems(equippedItems) {
   if (Array.isArray(equippedItems)) {
     return equippedItems.reduce((record, itemId) => {
@@ -89,7 +89,7 @@ function normalizeEquippedItems(equippedItems) {
   }, {});
 }
 
-// Guard against invalid skill ids when hydrating from old or edited saves.
+// 过滤旧存档或手工编辑存档里无效的技能 id。
 function normalizeSkillIds(skillIds) {
   if (!Array.isArray(skillIds)) {
     return [];
@@ -98,7 +98,7 @@ function normalizeSkillIds(skillIds) {
   return [...new Set(skillIds.filter((skillId) => getSkillById(skillId)))];
 }
 
-// Equipment bonuses are summed every time the player sheet is recalculated.
+// 每次重算玩家属性时，都要重新累加装备加成。
 function collectEquipmentBonus(player) {
   return Object.values(player.equippedItems ?? {}).reduce((bonus, itemId) => {
     const item = getItemById(itemId);
@@ -111,7 +111,7 @@ function collectEquipmentBonus(player) {
   }, createStatBlock());
 }
 
-// Learned passive skills affect the same stat pipeline as equipment.
+// 已学会的被动技能会走与装备相同的属性结算链路。
 function collectSkillBonus(player) {
   return player.skills.reduce((bonus, skillId) => {
     const skill = getSkillById(skillId);
@@ -124,7 +124,7 @@ function collectSkillBonus(player) {
   }, createStatBlock());
 }
 
-// Build the starter player with beginner gear already equipped.
+// 创建默认玩家，并让初始装备在开局就处于穿戴状态。
 function createFreshPlayer() {
   const baseStats = getStatsForLevel(1);
   const inventory = normalizeInventory([
@@ -147,7 +147,7 @@ function createFreshPlayer() {
   );
 
   return {
-    name: "Front-end Hunter",
+    name: "前端勇者",
     level: 1,
     exp: 0,
     hp: finalStats.maxHp,
@@ -166,7 +166,7 @@ function createFreshPlayer() {
   };
 }
 
-// The root state keeps both permanent run progress and long-term achievement data.
+// 根状态同时保存当前进度和长期成就数据。
 function createFreshState() {
   return {
     version: 4,
@@ -184,7 +184,7 @@ function createFreshState() {
   };
 }
 
-// Merge a save into the current schema while preserving safe fallbacks.
+// 把旧存档并入当前数据结构，同时保留安全兜底值。
 function mergeSavedState(savedState) {
   const freshState = createFreshState();
   const savedPlayer = savedState?.player ?? {};
@@ -238,17 +238,17 @@ export const useGameStore = defineStore("game", {
   state: () => createFreshState(),
 
   getters: {
-    // A run counts as active as soon as we have meaningful state to resume.
+    // 只要有可恢复的有效状态，这一局就算有进度。
     hasProgress: (state) =>
       state.started ||
       state.clearedEnemies.length > 0 ||
       state.encounteredEnemies.length > 0 ||
       state.lastPlayedAt !== null,
 
-    // Surface the next exp breakpoint for the map and HUD.
+    // 地图和 HUD 会用这个值展示下一次升级门槛。
     nextLevelExp: (state) => getNextLevelExp(state.player.level),
 
-    // Chapter cards use this to render local progress without duplicating logic.
+    // 章节卡通过这里读取局部进度，避免重复写逻辑。
     chapterProgress: (state) => (chapterId) => {
       const chapter = getChapterById(chapterId);
 
@@ -269,16 +269,16 @@ export const useGameStore = defineStore("game", {
       };
     },
 
-    // Keep the sidebar review board focused on the most recent misses.
+    // 侧栏复盘板只展示最近的几道错题。
     recentWrongQuestions: (state) => state.player.wrongQuestions.slice(0, 4),
 
-    // Count fully cleared chapters for milestones and map progression.
+    // 统计完全通关的章节数量，供地图和里程碑使用。
     clearedChaptersCount: (state) =>
       chapters.filter((chapter) =>
         chapter.enemyIds.every((enemyId) => state.clearedEnemies.includes(enemyId)),
       ).length,
 
-    // Point the player toward the next useful chapter, unlocked or not yet open.
+    // 为玩家指出当前最值得推进的下一章。
     nextTargetChapter: (state) => {
       const unlockedOpenChapter = chapters.find((chapter) => {
         if (!state.player.unlockedChapters.includes(chapter.id)) {
@@ -299,15 +299,15 @@ export const useGameStore = defineStore("game", {
       ) ?? null;
     },
 
-    // Build the quest-board headline from whichever chapter is currently most relevant.
+    // 根据当前最关键的章节生成任务看板主标题。
     activeQuest() {
       const targetChapter = this.nextTargetChapter;
 
       if (!targetChapter) {
         return {
-          title: "World Stabilized",
-          description: "Every visible chapter has been cleared. Time to extend the continent.",
-          progressLabel: `${this.clearedChaptersCount}/${chapters.length} chapters`,
+          title: "世界已暂时恢复秩序",
+          description: "当前可见章节都已通关，是时候继续扩展这片前端大陆了。",
+          progressLabel: `${this.clearedChaptersCount}/${chapters.length} 章`,
         };
       }
 
@@ -316,9 +316,9 @@ export const useGameStore = defineStore("game", {
 
       if (unlocked) {
         return {
-          title: `Clear ${targetChapter.title}`,
+          title: `通关 ${targetChapter.title}`,
           description: targetChapter.storyBeat,
-          progressLabel: `${progress.cleared}/${progress.total} encounters`,
+          progressLabel: `${progress.cleared}/${progress.total} 场遭遇`,
         };
       }
 
@@ -330,13 +330,13 @@ export const useGameStore = defineStore("game", {
         : { cleared: 0, total: 0 };
 
       return {
-        title: `Unlock ${targetChapter.title}`,
-        description: `Finish ${previousChapter?.title ?? "the current frontier"} to open the next route.`,
-        progressLabel: `${previousProgress.cleared}/${previousProgress.total} previous encounters`,
+        title: `解锁 ${targetChapter.title}`,
+        description: `先完成${previousChapter?.title ?? "当前边境"}，下一条道路才会开启。`,
+        progressLabel: `${previousProgress.cleared}/${previousProgress.total} 场前置遭遇`,
       };
     },
 
-    // Keep the quest board checklist short and directly actionable.
+    // 任务看板清单尽量短，并且每一条都能直接行动。
     questChecklist() {
       const targetChapter = this.nextTargetChapter;
       const nextBoss = enemies.find((enemy) => {
@@ -349,70 +349,70 @@ export const useGameStore = defineStore("game", {
 
       return [
         {
-          title: "Frontier",
+          title: "前线",
           body: targetChapter
-            ? `${targetChapter.title} is your next major checkpoint.`
-            : "All currently designed frontiers have been cleared.",
+            ? `${targetChapter.title} 就是你当前的主要推进目标。`
+            : "当前已设计的所有前线都已经打通。",
         },
         {
-          title: "Boss Target",
+          title: "Boss 目标",
           body: nextBoss
-            ? `${nextBoss.name} is still guarding the route forward.`
-            : "No active boss target. A new chapter or rematch is available.",
+            ? `${nextBoss.name} 仍然挡在前进路线的尽头。`
+            : "当前没有正在阻挡道路的 Boss，可以继续推进新章节或返场练习。",
         },
         {
-          title: "Revision",
+          title: "复习",
           body:
             this.recentWrongQuestions.length > 0
-              ? `${this.recentWrongQuestions.length} recent prompts are waiting in the handbook.`
-              : "Your recent answer log is clean.",
+              ? `图鉴里还有 ${this.recentWrongQuestions.length} 道最近错题在等你回头复盘。`
+              : "最近的答题记录很干净。",
         },
       ];
     },
 
-    // Milestones provide long-term goals beyond simple chapter completion.
+    // 里程碑提供了章节通关之外的长期目标。
     milestoneCards() {
       return [
         {
-          title: "First Victory",
+          title: "初战告捷",
           unlocked: this.achievements.totalVictories >= 1,
           progressLabel: `${Math.min(this.achievements.totalVictories, 1)}/1`,
-          body: "Win your first trial on the continent.",
+          body: "赢下你在前端大陆上的第一场试炼。",
         },
         {
-          title: "Boss Breaker",
+          title: "Boss 终结者",
           unlocked: this.achievements.bossVictories >= 3,
           progressLabel: `${this.achievements.bossVictories}/3`,
-          body: "Defeat three chapter bosses.",
+          body: "击败 3 个章节 Boss。",
         },
         {
-          title: "Perfect Route",
+          title: "完美路线",
           unlocked: this.achievements.flawlessEnemyIds.length >= 1,
           progressLabel: `${this.achievements.flawlessEnemyIds.length}/1`,
-          body: "Finish any encounter without a wrong answer.",
+          body: "在任意一场遭遇战中做到全程无错。",
         },
         {
-          title: "Combo Scholar",
+          title: "连击学者",
           unlocked: this.achievements.highestCombo >= 4,
           progressLabel: `${this.achievements.highestCombo}/4`,
-          body: "Reach a combo streak of four correct answers.",
+          body: "连续答对 4 题，打出一段连击。",
         },
         {
-          title: "Cartographer",
+          title: "大陆绘图师",
           unlocked: this.clearedChaptersCount >= chapters.length,
           progressLabel: `${this.clearedChaptersCount}/${chapters.length}`,
-          body: "Fully clear every currently visible chapter on the map.",
+          body: "完整通关当前地图上所有可见章节。",
         },
         {
-          title: "State Sovereign",
+          title: "状态主宰者",
           unlocked: this.clearedEnemies.includes(702),
-          progressLabel: this.clearedEnemies.includes(702) ? "Complete" : "Pending",
-          body: "Defeat the State Disorder King in the final temple.",
+          progressLabel: this.clearedEnemies.includes(702) ? "已完成" : "未完成",
+          body: "在最终神殿中击败状态混乱魔王。",
         },
       ];
     },
 
-    // Skills can only unlock when the run satisfies level, chapter, and prerequisite gates.
+    // 技能必须同时满足等级、章节和前置要求才能解锁。
     canUnlockSkill: (state) => (skillId) => {
       const skill = getSkillById(skillId);
 
@@ -441,13 +441,13 @@ export const useGameStore = defineStore("game", {
       );
     },
 
-    // Inventory views ask for quantities by item id.
+    // 背包页面按道具 id 查询堆叠数量。
     itemQuantity: (state) => (itemId) =>
       state.player.inventory.find((entry) => entry.itemId === itemId)?.quantity ?? 0,
   },
 
   actions: {
-    // Boot-time hydrate keeps old saves compatible with the newest schema.
+    // 启动时恢复存档，并兼容旧版本数据结构。
     hydrateFromSave() {
       const savedState = loadGame();
 
@@ -459,7 +459,7 @@ export const useGameStore = defineStore("game", {
       this.recalculatePlayer(false);
     },
 
-    // Autosave subscribes once and then mirrors every state change to localStorage.
+    // 自动存档只注册一次，之后所有变更都会同步到 localStorage。
     enableAutoSave() {
       if (this._autoSaveReady) {
         return;
@@ -475,7 +475,7 @@ export const useGameStore = defineStore("game", {
       this._autoSaveReady = true;
     },
 
-    // Starting fresh clears all progression while preserving current game rules.
+    // 开始新游戏时重置整局进度，但保留当前版本规则。
     startNewGame() {
       this.$patch(createFreshState());
       this.started = true;
@@ -483,13 +483,13 @@ export const useGameStore = defineStore("game", {
       this.recalculatePlayer(true);
     },
 
-    // Reset is the hard wipe used from the map town menu.
+    // 彻底重置整局进度，用于地图页的重开操作。
     resetGame() {
       this.$patch(createFreshState());
       clearGameSave();
     },
 
-    // Rebuild the derived player sheet whenever exp, gear, or skills change.
+    // 经验、装备或技能变化时，都要重建玩家属性面板。
     recalculatePlayer(restoreVitals = false) {
       const currentHp = this.player.hp;
       const currentMp = this.player.mp;
@@ -516,21 +516,21 @@ export const useGameStore = defineStore("game", {
       }
     },
 
-    // Sync battle-ending vitals back into the persistent run state.
+    // 把战斗结束时的血量和法力同步回主进度。
     syncVitals(nextHp, nextMp) {
       this.player.hp = Math.max(0, Math.min(Math.round(nextHp), this.player.maxHp));
       this.player.mp = Math.max(0, Math.min(Math.round(nextMp), this.player.maxMp));
       this.lastPlayedAt = Date.now();
     },
 
-    // Consumables and camp rest both route through this small healing helper.
+    // 消耗品和营地休息都会走这条统一恢复逻辑。
     healPlayer(effect = {}) {
       this.player.hp = Math.min(this.player.maxHp, this.player.hp + (effect.hp ?? 0));
       this.player.mp = Math.min(this.player.maxMp, this.player.mp + (effect.mp ?? 0));
       this.lastPlayedAt = Date.now();
     },
 
-    // Rewards and drops use the same inventory insertion path.
+    // 奖励和掉落都通过这条背包写入路径进入存档。
     addItem(itemId, quantity = 1) {
       const item = getItemById(itemId);
 
@@ -549,7 +549,7 @@ export const useGameStore = defineStore("game", {
       return true;
     },
 
-    // Consumables apply their effect immediately and then reduce stack count.
+    // 消耗品立即生效，然后扣减对应堆叠数量。
     useItem(itemId) {
       const item = getItemById(itemId);
       const inventoryEntry = this.player.inventory.find((entry) => entry.itemId === itemId);
@@ -570,7 +570,7 @@ export const useGameStore = defineStore("game", {
       return true;
     },
 
-    // Equipping the same item twice acts as a toggle for that slot.
+    // 再次装备同一件物品会视为卸下，形成切换行为。
     equipItem(itemId) {
       const item = getItemById(itemId);
       const inventoryEntry = this.player.inventory.find((entry) => entry.itemId === itemId);
@@ -590,7 +590,7 @@ export const useGameStore = defineStore("game", {
       return true;
     },
 
-    // Skills permanently modify the player sheet and spend skill points.
+    // 解锁技能会永久修改属性面板，并消耗技能点。
     unlockSkill(skillId) {
       const skill = getSkillById(skillId);
 
@@ -605,7 +605,7 @@ export const useGameStore = defineStore("game", {
       return true;
     },
 
-    // Camp rest trades gold for a guaranteed refill between encounters.
+    // 营地休息用金币换取稳定的满状态恢复。
     restAtCamp() {
       if (this.player.gold < CAMP_REST_COST) {
         return false;
@@ -618,14 +618,14 @@ export const useGameStore = defineStore("game", {
       return true;
     },
 
-    // Encounter tracking feeds the handbook even if the player loses the fight.
+    // 即使战斗失败，只要遇到过敌人，也会写入图鉴遭遇记录。
     markEnemyEncountered(enemyId) {
       if (!this.encounteredEnemies.includes(enemyId)) {
         this.encounteredEnemies.push(enemyId);
       }
     },
 
-    // Wrong answers are deduplicated and promoted to the top of the review backlog.
+    // 错题会去重，并被推到错题本最前面。
     recordWrongQuestion(question) {
       const existing = this.player.wrongQuestions.find(
         (entry) => entry.id === question.id,
@@ -650,7 +650,7 @@ export const useGameStore = defineStore("game", {
       this.player.wrongQuestions = this.player.wrongQuestions.slice(0, 16);
     },
 
-    // Correct review or drill answers can remove a prompt from the backlog.
+    // 在复盘或训练里答对后，可以把对应题目从错题本移除。
     resolveWrongQuestion(questionId) {
       const nextWrongQuestions = this.player.wrongQuestions.filter(
         (entry) => entry.id !== Number(questionId),
@@ -665,8 +665,8 @@ export const useGameStore = defineStore("game", {
       return true;
     },
 
-    // Battle milestones update achievement cards without mixing with reward logic.
-    recordBattleMilestone({ enemyId, maxCombo = 0, perfectClear = false, enemyRole = "Scout" }) {
+    // 战斗里程碑只负责更新成就，不和奖励结算混在一起。
+    recordBattleMilestone({ enemyId, maxCombo = 0, perfectClear = false, enemyRole = "小怪" }) {
       this.achievements.totalVictories += 1;
       this.achievements.highestCombo = Math.max(
         this.achievements.highestCombo,
@@ -682,7 +682,7 @@ export const useGameStore = defineStore("game", {
       }
     },
 
-    // Victory handles first-clear rewards, chapter unlocks, and any level-up fallout.
+    // 胜利结算负责处理首通奖励、章节解锁和升级收益。
     applyVictory(enemyId, nextVitals = null) {
       const enemy = getEnemyById(enemyId);
 
@@ -772,7 +772,7 @@ export const useGameStore = defineStore("game", {
       };
     },
 
-    // Defeat leaves the player wounded but always able to continue the run.
+    // 失败后会保留一定恢复量，确保这局游戏还能继续推进。
     applyDefeat(nextVitals = null) {
       if (nextVitals) {
         this.syncVitals(nextVitals.hp, nextVitals.mp);

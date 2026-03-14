@@ -2,10 +2,10 @@
   <main class="page-shell home-view">
     <section class="hero panel hero-panel">
       <div class="panel__eyebrow">Vue Hunter</div>
-      <h1 class="hero__title">Front-end trials disguised as an RPG.</h1>
+      <h1 class="hero__title">把 Vue3 学习做成一场 RPG 试炼。</h1>
       <p class="hero__body">
-        Learn Vue 3 one battle at a time. Answer knowledge prompts, deal damage,
-        level up, and unlock the next zone of the continent.
+        在战斗里答题，在成长里掌握 Vue3。每一次出招、升级、解锁新区域，
+        都是在推进你的前端勇者之路。
       </p>
 
       <div class="hero__actions">
@@ -14,7 +14,7 @@
           class="button button--primary"
           @click="handleNewGame"
         >
-          Start new run
+          开始新游戏
         </button>
         <button
           type="button"
@@ -22,58 +22,55 @@
           :disabled="!gameStore.hasProgress"
           @click="handleContinue"
         >
-          Continue run
+          继续游戏
         </button>
       </div>
 
-      <!-- The home hero highlights the current build scope at a glance. -->
+      <!-- 首页数据卡帮助玩家快速了解当前版本内容范围。 -->
       <div class="hero__stats">
         <div class="hero-stat">
-          <span class="hero-stat__label">Current build</span>
+          <span class="hero-stat__label">当前版本</span>
           <strong>{{ buildLabel }}</strong>
         </div>
         <div class="hero-stat">
-          <span class="hero-stat__label">Playable chapters</span>
+          <span class="hero-stat__label">可玩章节</span>
           <strong>{{ chapterCount }}</strong>
         </div>
         <div class="hero-stat">
-          <span class="hero-stat__label">Question type</span>
-          <strong>3 battle types</strong>
+          <span class="hero-stat__label">题型数量</span>
+          <strong>3 种战斗题型</strong>
         </div>
       </div>
     </section>
 
-    <!-- These cards explain what the current MVP already supports. -->
+    <!-- 功能卡片概览当前 MVP 已经支持的核心循环。 -->
     <section class="feature-grid">
       <article class="panel feature-card">
-        <div class="panel__eyebrow">Loop</div>
-        <h2 class="panel__title">Map -> Battle -> Reward</h2>
+        <div class="panel__eyebrow">循环</div>
+        <h2 class="panel__title">地图 -> 战斗 -> 奖励</h2>
         <p>
-          The core loop is already wired: pick a zone, survive a quiz duel, and
-          collect progress.
+          当前主流程已经打通：选章节、打题目战斗、拿奖励、继续成长。
         </p>
       </article>
 
       <article class="panel feature-card">
-        <div class="panel__eyebrow">Learning</div>
-        <h2 class="panel__title">Wrong answers stay useful</h2>
+        <div class="panel__eyebrow">学习</div>
+        <h2 class="panel__title">错题会留下来继续训练</h2>
         <p>
-          Missed prompts are stored in the save data so the handbook can surface
-          what needs a rematch later.
+          所有答错题都会记录进存档，后续可以在图鉴和练习模式里继续复盘。
         </p>
       </article>
 
       <article class="panel feature-card">
-        <div class="panel__eyebrow">Bosses</div>
-        <h2 class="panel__title">Boss fights now have phases</h2>
+        <div class="panel__eyebrow">Boss</div>
+        <h2 class="panel__title">Boss 战已经支持阶段变化</h2>
         <p>
-          Late encounters can enrage mid-fight, change attack intent, and force a
-          different rhythm than normal quiz battles.
+          后期 Boss 会在战斗中途进入新阶段、改变攻击意图，节奏也会和普通战不同。
         </p>
       </article>
     </section>
 
-    <!-- Returning players get their active quest board directly on the home screen. -->
+    <!-- 有进度时直接在首页展示当前任务看板。 -->
     <QuestBoard
       v-if="gameStore.hasProgress"
       class="home-view__quest-board"
@@ -89,23 +86,23 @@ import QuestBoard from "../components/common/QuestBoard.vue";
 import { chapters } from "../data/chapters";
 import { useGameStore } from "../stores/game";
 
-// Home acts as the onboarding hub for starting or resuming a run.
+// 首页承担新开局和继续游戏的入口职责。
 const router = useRouter();
 const gameStore = useGameStore();
-// Chapter count and build label stay data-driven as the project grows.
+// 章节数和版本标识都从数据层动态推导。
 const chapterCount = computed(() => chapters.length);
 const buildLabel = computed(() => {
   const numerals = ["I", "II", "III", "IV", "V", "VI", "VII"];
-  return `Alpha ${numerals[Math.max(0, chapterCount.value - 1)] ?? chapterCount.value}`;
+  return `内测 ${numerals[Math.max(0, chapterCount.value - 1)] ?? chapterCount.value}`;
 });
 
-// Starting a new run resets the store and immediately sends the player to the map.
+// 新游戏会重置整局状态并立即进入地图。
 function handleNewGame() {
   gameStore.startNewGame();
   router.push("/map");
 }
 
-// Continue only routes away when there is meaningful progress to resume.
+// 只有存在有效进度时才允许继续游戏。
 function handleContinue() {
   if (!gameStore.hasProgress) {
     return;

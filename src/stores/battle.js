@@ -5,14 +5,14 @@ import { getQuestionsByIds } from "../data/questions";
 import { calcDamage } from "../utils/calcDamage";
 import { useGameStore } from "./game";
 
-// Different prompt types slightly shift damage so code questions feel punchier.
+// 不同题型会略微影响伤害倍率，让代码题更有爆发感。
 const QUESTION_DAMAGE_SCALE = {
   single: 1,
   judge: 0.92,
   code: 1.22,
 };
 
-// Battle state is reset per encounter and never persisted directly.
+// 战斗状态按遭遇重置，不直接写入长期存档。
 function createBattleState() {
   return {
     status: "idle",
@@ -35,29 +35,29 @@ function createBattleState() {
   };
 }
 
-// Resolve the damage multiplier from the active prompt type.
+// 根据题型读取对应的伤害倍率。
 function getQuestionScale(questionType) {
   return QUESTION_DAMAGE_SCALE[questionType] ?? 1;
 }
 
-// Enemy intent text gives the UI a readable preview of the next counterattack.
+// 敌人意图文案会在界面上展示下一次反击倾向。
 function getEnemyIntent(enemy, bossPhase, turn) {
   if (!enemy) {
     return null;
   }
 
   if (enemy.role !== "Boss") {
-    return turn % 2 === 0 ? "Measured counterattack" : "Standard strike";
+    return turn % 2 === 0 ? "蓄力反击" : "标准攻击";
   }
 
   if (bossPhase < 2) {
-    return turn % 2 === 0 ? "Scripted probe" : "Guard break";
+    return turn % 2 === 0 ? "试探施压" : "破防重击";
   }
 
-  return turn % 2 === 0 ? "Overload barrage" : "Enraged strike";
+  return turn % 2 === 0 ? "过载连击" : "狂怒斩击";
 }
 
-// End-of-fight rank is based on cleanliness, combo skill, and boss handling.
+// 战斗评级由正确率、连击表现和 Boss 阶段处理共同决定。
 function buildBattleRank({ isBossBattle, perfectClear, maxCombo, bossPhaseTriggered }) {
   if (perfectClear && maxCombo >= 4) {
     return "S";
@@ -78,20 +78,20 @@ export const useBattleStore = defineStore("battle", {
   state: () => createBattleState(),
 
   getters: {
-    // Skill attacks cost a flat amount of MP in the MVP.
+    // MVP 中技能攻击统一消耗固定 MP。
     canUseSkill: (state) => state.playerSnapshot?.mp >= 10,
     isBossBattle: (state) => state.enemy?.role === "Boss",
-    // The UI shows intent as a computed read-only battle hint.
+    // 界面会把敌人意图当成回合提示显示出来。
     enemyIntent: (state) => getEnemyIntent(state.enemy, state.bossPhase, state.turn),
   },
 
   actions: {
-    // Reset is called when leaving battle routes or starting a new encounter.
+    // 离开战斗或开启新遭遇时，重置整份临时战斗状态。
     resetBattle() {
       this.$patch(createBattleState());
     },
 
-    // Initialize one encounter from enemy data plus the current persistent player sheet.
+    // 根据敌人数据和当前玩家面板初始化一场战斗。
     startBattle(enemyId) {
       const gameStore = useGameStore();
       const enemy = getEnemyById(enemyId);
@@ -128,15 +128,15 @@ export const useBattleStore = defineStore("battle", {
       this.lastOutcome = null;
       this.battleResult = null;
       this.log = [
-        `Intent: ${getEnemyIntent(enemy, this.bossPhase, this.turn)}.`,
-        `${enemy.name} blocks the road.`,
+        `意图：${getEnemyIntent(enemy, this.bossPhase, this.turn)}。`,
+        `${enemy.name} 挡在了前进的道路上。`,
       ];
       this.drawQuestion();
 
       return true;
     },
 
-    // If the player leaves mid-fight, keep the current HP and MP changes.
+    // 中途离开战斗时，也要保留当前血蓝变化。
     commitProgressOnExit() {
       if (!this.playerSnapshot || !["in_progress", "resolved"].includes(this.status)) {
         return;
@@ -146,7 +146,7 @@ export const useBattleStore = defineStore("battle", {
       gameStore.syncVitals(this.playerSnapshot.hp, this.playerSnapshot.mp);
     },
 
-    // Action selection is only mutable while waiting for an answer.
+    // 只有在等待答题时，玩家才允许切换行动。
     setSelectedAction(action) {
       if (this.status !== "in_progress") {
         return;
@@ -159,7 +159,7 @@ export const useBattleStore = defineStore("battle", {
       this.selectedAction = action;
     },
 
-    // Draw a question without repeating until the local encounter pool is exhausted.
+    // 本地题池未用尽前，尽量避免重复抽题。
     drawQuestion() {
       if (!this.enemy) {
         this.currentQuestion = null;
@@ -187,7 +187,7 @@ export const useBattleStore = defineStore("battle", {
       this.currentQuestion = nextQuestion;
     },
 
-    // Bosses gain a one-time phase shift once they drop below half health.
+    // Boss 掉到半血以下时会触发一次性的阶段切换。
     maybeTriggerBossPhase() {
       if (!this.enemy || this.enemy.role !== "Boss" || this.bossPhaseTriggered) {
         return null;
@@ -205,14 +205,14 @@ export const useBattleStore = defineStore("battle", {
       const restoredHp = Math.max(12, Math.round(this.enemy.maxHp * 0.18));
       this.enemyHp = Math.min(this.enemy.maxHp, this.enemyHp + restoredHp);
 
-      const phaseLine = `${this.enemy.name} enters Phase 2, restores ${restoredHp} HP, and sharpens its pattern.`;
+      const phaseLine = `${this.enemy.name} 进入第二阶段，恢复了 ${restoredHp} 点 HP，并改变了攻击节奏。`;
       this.log.unshift(phaseLine);
       this.log = this.log.slice(0, 10);
 
       return phaseLine;
     },
 
-    // One submitted answer resolves the player action, enemy counter, and result state.
+    // 一次答题会同时结算玩家行动、敌人反击和本回合结果。
     submitAnswer(option) {
       if (
         this.status !== "in_progress" ||
@@ -230,7 +230,7 @@ export const useBattleStore = defineStore("battle", {
       const comboBonus = correct
         ? 1 + Math.min(Math.max(0, nextCombo - 1), 3) * 0.08
         : 1;
-      // Action can still downgrade to a basic attack if MP ran out between turns.
+      // 如果 MP 不足，技能会自动降级成普通攻击。
       let enemyIntent = getEnemyIntent(this.enemy, this.bossPhase, this.turn);
       let action = this.selectedAction;
       let playerDamage = 0;
@@ -259,7 +259,11 @@ export const useBattleStore = defineStore("battle", {
           effectLine =
             nextCombo >= 3
               ? "Correct answer. Basic Strike extends the combo."
-              : "Correct answer. Basic Strike lands cleanly.";
+              : "回答正确，普通攻击命中。";
+          effectLine =
+            nextCombo >= 3
+              ? "回答正确，普通攻击延续了连击。"
+              : "回答正确，普通攻击命中。";
         }
 
         if (action === "skill") {
@@ -270,8 +274,8 @@ export const useBattleStore = defineStore("battle", {
           );
           effectLine =
             this.currentQuestion.type === "code"
-              ? "Correct code fill. Vue Burst lands a critical hit."
-              : "Correct answer. Vue Burst hits for bonus damage.";
+              ? "代码题回答正确，Vue 爆发打出了暴击。"
+              : "回答正确，Vue 爆发造成了额外伤害。";
         }
 
         if (action === "guard") {
@@ -283,15 +287,18 @@ export const useBattleStore = defineStore("battle", {
           effectLine =
             nextCombo >= 2
               ? "Correct answer. Debug Guard holds the combo and softens the hit."
-              : "Correct answer. Debug Guard softens the counterattack.";
+              : "回答正确，调试防御减轻了敌人的反击。";
+          effectLine =
+            nextCombo >= 2
+              ? "回答正确，调试防御保住了连击并削弱了下一次受击。"
+              : "回答正确，调试防御减轻了敌人的反击。";
         }
       } else {
         if (action === "guard") {
           this.pendingGuard = 0.25;
-          effectLine =
-            "Wrong answer. Your guard still takes the edge off the next hit.";
+          effectLine = "回答错误，但你的防御仍然替你挡掉了一部分伤害。";
         } else {
-          effectLine = "Wrong answer. The attack fizzles before it connects.";
+          effectLine = "回答错误，攻击在命中前就已经失效了。";
         }
 
         gameStore.recordWrongQuestion(this.currentQuestion);
@@ -300,7 +307,7 @@ export const useBattleStore = defineStore("battle", {
       this.comboStreak = nextCombo;
       this.maxCombo = Math.max(this.maxCombo, nextCombo);
 
-      // Boss phase 2 reduces incoming player damage so the fight feels more distinct.
+      // Boss 二阶段会降低玩家造成的伤害，让阶段差异更明显。
       if (playerDamage > 0 && this.enemy.role === "Boss" && this.bossPhase === 2) {
         playerDamage = Math.max(3, Math.round(playerDamage * 0.82));
       }
@@ -344,10 +351,10 @@ export const useBattleStore = defineStore("battle", {
           rank,
           perfectClear,
           maxCombo: this.maxCombo,
-          title: "Victory",
+          title: "胜利",
           message: rewards.alreadyCleared
-            ? "This encounter was already cleared, so this run counts as practice."
-            : "The monster dissolves into study notes and loot.",
+            ? "这场遭遇已经通关过了，所以这次只会算作练习。"
+            : "怪物化作知识碎片和战利品消散了。",
         };
         this.lastOutcome = {
           correct,
@@ -364,7 +371,7 @@ export const useBattleStore = defineStore("battle", {
         return;
       }
 
-      // Guard modifies the next retaliation rather than the current attack itself.
+      // 防御影响的是敌人的反击，不是当前玩家出手。
       let enemyScale = 1 - this.pendingGuard;
       let enemyAttack = this.enemy.attack;
 
@@ -393,10 +400,10 @@ export const useBattleStore = defineStore("battle", {
 
         this.status = "defeat";
         this.battleResult = {
-          title: "Retreat",
+          title: "败退",
           message:
-            "The lesson wins this time. You recover a little at camp and can regroup from the map.",
-          rank: "Retry",
+            "这一次是题目赢了。你会在营地恢复一部分状态，然后从地图重新整备。",
+          rank: "重试",
           maxCombo: this.maxCombo,
           ...defeatState,
         };
@@ -416,12 +423,12 @@ export const useBattleStore = defineStore("battle", {
         comboStreak: this.comboStreak,
       };
 
-      this.log.unshift(`${this.enemy.name} uses ${enemyIntent} for ${enemyDamage} damage.`);
+      this.log.unshift(`${this.enemy.name} 发动了${enemyIntent}，造成 ${enemyDamage} 点伤害。`);
       this.log.unshift(effectLine);
       this.log = this.log.slice(0, 10);
     },
 
-    // Advance to the next turn only after the player has read the previous outcome.
+    // 玩家读完结果后，才允许正式进入下一回合。
     advanceTurn() {
       if (this.status !== "resolved") {
         return;
@@ -435,7 +442,7 @@ export const useBattleStore = defineStore("battle", {
 
       if (this.enemy) {
         this.log.unshift(
-          `Intent: ${getEnemyIntent(this.enemy, this.bossPhase, this.turn)}.`,
+          `意图：${getEnemyIntent(this.enemy, this.bossPhase, this.turn)}。`,
         );
         this.log = this.log.slice(0, 10);
       }

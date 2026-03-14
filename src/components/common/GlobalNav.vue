@@ -7,10 +7,10 @@
       >
         Vue Hunter
       </RouterLink>
-      <span class="global-nav__subtitle">Front-end Trial Ledger</span>
+      <span class="global-nav__subtitle">前端勇者试炼</span>
     </div>
 
-    <!-- The nav stays route-driven so adding a new top-level screen is one data change. -->
+    <!-- 顶部导航完全由数据驱动，新增主页面时只需要补一个条目。 -->
     <nav class="global-nav__links">
       <RouterLink
         v-for="link in links"
@@ -25,15 +25,15 @@
 
     <div class="global-nav__stats">
       <div class="global-nav__stat">
-        <span>Lvl</span>
+        <span>等级</span>
         <strong>{{ gameStore.player.level }}</strong>
       </div>
       <div class="global-nav__stat">
-        <span>Gold</span>
+        <span>金币</span>
         <strong>{{ gameStore.player.gold }}</strong>
       </div>
       <div class="global-nav__stat">
-        <span>SP</span>
+        <span>技能点</span>
         <strong>{{ gameStore.player.skillPoints }}</strong>
       </div>
     </div>
@@ -45,17 +45,17 @@ import { RouterLink, useRoute } from "vue-router";
 
 import { useGameStore } from "../../stores/game";
 
-// Read route and player data once so the shell can stay reactive without prop-drilling.
+// 直接读取路由和玩家状态，让整个外壳保持响应式而不需要层层传参。
 const route = useRoute();
 const gameStore = useGameStore();
 
-// Top-level screens are intentionally flat and always available from the shell.
+// 所有主页面都保持平铺，方便玩家随时切换。
 const links = [
-  { label: "Home", to: "/" },
-  { label: "Map", to: "/map" },
-  { label: "Inventory", to: "/inventory" },
-  { label: "Skills", to: "/skills" },
-  { label: "Handbook", to: "/handbook" },
-  { label: "Practice", to: "/practice" },
+  { label: "首页", to: "/" },
+  { label: "地图", to: "/map" },
+  { label: "背包", to: "/inventory" },
+  { label: "技能树", to: "/skills" },
+  { label: "图鉴", to: "/handbook" },
+  { label: "练习", to: "/practice" },
 ];
 </script>
