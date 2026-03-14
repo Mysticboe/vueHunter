@@ -1,3 +1,4 @@
+/* Global theme tokens and shared colors for the game's retro presentation. */
 :root {
   color-scheme: dark;
   font-family: "Courier New", "Lucida Console", monospace;
@@ -27,6 +28,7 @@
   --pixel-border: rgba(255, 232, 188, 0.12);
 }
 
+/* Basic reset rules and layered page background. */
 * {
   box-sizing: border-box;
 }
@@ -97,6 +99,7 @@ a {
   padding-bottom: 32px;
 }
 
+/* Persistent application shell and top navigation. */
 .global-nav {
   position: sticky;
   top: 0;
@@ -180,6 +183,7 @@ a {
   font-size: 0.74rem;
 }
 
+/* Shared panel framing used across every route. */
 .panel {
   position: relative;
   padding: 24px;
@@ -225,6 +229,7 @@ a {
   letter-spacing: 0.04em;
 }
 
+/* Reusable controls for buttons, chips, and tags. */
 .button {
   display: inline-flex;
   align-items: center;
@@ -290,6 +295,7 @@ a {
   gap: 10px;
 }
 
+/* Home screen hero and feature-grid styling. */
 .hero-panel {
   overflow: hidden;
 }
@@ -358,6 +364,7 @@ a {
   background: rgba(255, 255, 255, 0.02);
 }
 
+/* Shared layout primitives for map, utility screens, and practice reports. */
 .hero-stat__label,
 .hud-stat span,
 .summary-grid span,
@@ -440,6 +447,7 @@ a {
   flex-wrap: wrap;
 }
 
+/* Quest board and chapter map presentation. */
 .quest-board {
   border-color: rgba(227, 159, 60, 0.2);
   background:
@@ -548,6 +556,7 @@ a {
   gap: 10px;
 }
 
+/* Encounter and answer controls reuse the same tactile button treatment. */
 .encounter-button,
 .answer-button,
 .action-chip {
@@ -605,6 +614,7 @@ a {
   background: rgba(255, 255, 255, 0.02);
 }
 
+/* Shared card list presentation for codex, inventory, and handbook sections. */
 .card-list {
   display: grid;
   gap: 14px;
@@ -635,6 +645,7 @@ a {
   margin: 6px 0;
 }
 
+/* Battle layout, boss banner, and turn prompt styling. */
 .battle-layout {
   display: grid;
   gap: 18px;
@@ -737,6 +748,7 @@ a {
   line-height: 1;
 }
 
+/* Question and result surfaces shared by battle and practice flows. */
 .question-card {
   padding: 18px;
   border-radius: 20px;
@@ -919,6 +931,7 @@ a {
   place-items: start;
 }
 
+/* Animation and responsive breakpoints. */
 @keyframes boss-pulse {
   0%,
   100% {
