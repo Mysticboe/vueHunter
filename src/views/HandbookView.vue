@@ -53,7 +53,7 @@
             <div>
               <strong>{{ enemy.encountered ? enemy.name : "未知敌人" }}</strong>
               <p>
-                {{ enemy.encountered ? `第 ${enemy.chapterId} 章的${enemy.role}` : "在战斗中遇见它之后，这里的信息才会解锁。" }}
+                {{ enemy.encountered ? `第 ${enemy.chapterId} 章的${enemy.displayRole}` : "在战斗中遇见它之后，这里的信息才会解锁。" }}
               </p>
               <small v-if="enemy.encountered">
                 奖励：{{ enemy.rewardExp }} 经验 / {{ enemy.rewardGold }} 金币
@@ -163,7 +163,7 @@
             :key="entry.id"
             class="list-card list-card--stack"
           >
-            <strong>Q{{ entry.id }} | Chapter {{ entry.chapterId }}</strong>
+            <strong>Q{{ entry.id }} | 第 {{ entry.chapterId }} 章</strong>
             <p>{{ entry.prompt }}</p>
             <small>答案：{{ entry.answer }} | 答错 {{ entry.count }} 次</small>
             <p class="muted-copy">{{ entry.explanation }}</p>
@@ -209,6 +209,7 @@ const codexEntries = computed(() =>
   enemies.map((enemy) => ({
     ...enemy,
     encountered: gameStore.encounteredEnemies.includes(enemy.id),
+    displayRole: enemy.role === "Boss" ? "首领" : enemy.role,
   })),
 );
 

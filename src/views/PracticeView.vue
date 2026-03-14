@@ -318,7 +318,7 @@ const sessionQueue = ref([]);
 const sessionStats = ref(createSessionStats());
 const outcome = ref(null);
 
-// 通过 query 参数决定模式，方便图鉴和地图深链跳转。
+// 通过地址参数决定模式，方便图鉴和地图深链跳转。
 const practiceMode = computed(() => {
   const rawMode = Array.isArray(route.query.mode)
     ? route.query.mode[0]
@@ -450,7 +450,7 @@ const reviewFilters = computed(() => [
 
 const drillFilters = computed(() =>
   unlockedChapters.value.map((chapter) => ({
-    label: `Chapter ${chapter.id}`,
+    label: `第 ${chapter.id} 章`,
     value: chapter.id,
     count: getQuestionsByChapterId(chapter.id).length,
     disabled: false,
@@ -461,7 +461,7 @@ const activeFilters = computed(() =>
   practiceMode.value === "drill" ? drillFilters.value : reviewFilters.value,
 );
 
-// 统一过滤值的形态，兼容 review 的字符串和 drill 的数字章节 id。
+// 统一过滤值的形态，兼容复盘模式的字符串和训练模式的数字章节 id。
 const currentFilterValue = computed(() => {
   if (practiceMode.value === "drill") {
     return selectedChapterId.value;

@@ -27,6 +27,6 @@
 <script setup>
 import { useGameStore } from "../../stores/game";
 
-// 看板内容全是派生状态，所以直接从主 store 读取即可。
+// 看板内容全是派生状态，所以直接从主状态仓库读取即可。
 const gameStore = useGameStore();
 </script>

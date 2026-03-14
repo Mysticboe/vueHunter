@@ -245,7 +245,7 @@ export const useGameStore = defineStore("game", {
       state.encounteredEnemies.length > 0 ||
       state.lastPlayedAt !== null,
 
-    // 地图和 HUD 会用这个值展示下一次升级门槛。
+    // 地图和顶部面板都会用这个值展示下一次升级门槛。
     nextLevelExp: (state) => getNextLevelExp(state.player.level),
 
     // 章节卡通过这里读取局部进度，避免重复写逻辑。
@@ -355,10 +355,10 @@ export const useGameStore = defineStore("game", {
             : "当前已设计的所有前线都已经打通。",
         },
         {
-          title: "Boss 目标",
+          title: "首领目标",
           body: nextBoss
             ? `${nextBoss.name} 仍然挡在前进路线的尽头。`
-            : "当前没有正在阻挡道路的 Boss，可以继续推进新章节或返场练习。",
+            : "当前没有正在阻挡道路的首领，可以继续推进新章节或返场练习。",
         },
         {
           title: "复习",
@@ -380,10 +380,10 @@ export const useGameStore = defineStore("game", {
           body: "赢下你在前端大陆上的第一场试炼。",
         },
         {
-          title: "Boss 终结者",
+          title: "首领终结者",
           unlocked: this.achievements.bossVictories >= 3,
           progressLabel: `${this.achievements.bossVictories}/3`,
-          body: "击败 3 个章节 Boss。",
+          body: "击败 3 个章节首领。",
         },
         {
           title: "完美路线",
@@ -459,7 +459,7 @@ export const useGameStore = defineStore("game", {
       this.recalculatePlayer(false);
     },
 
-    // 自动存档只注册一次，之后所有变更都会同步到 localStorage。
+    // 自动存档只注册一次，之后所有变更都会同步到浏览器本地存储。
     enableAutoSave() {
       if (this._autoSaveReady) {
         return;

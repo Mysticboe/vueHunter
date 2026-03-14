@@ -39,7 +39,7 @@
       >
         <span>{{ enemy.name }}</span>
         <small>
-          {{ clearedEnemies.includes(enemy.id) ? "再次练习" : enemy.role }}
+          {{ clearedEnemies.includes(enemy.id) ? "再次练习" : enemy.role === "Boss" ? "首领" : enemy.role }}
         </small>
       </button>
     </div>

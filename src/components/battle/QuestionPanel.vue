@@ -90,7 +90,7 @@
 <script setup>
 import { computed } from "vue";
 
-// 这里的 props 与临时战斗状态一一对应，组件本身保持无状态。
+// 这里的传入参数与临时战斗状态一一对应，组件本身保持无状态。
 const props = defineProps({
   question: {
     type: Object,

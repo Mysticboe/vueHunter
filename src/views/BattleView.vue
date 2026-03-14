@@ -19,7 +19,7 @@
           v-if="battleStore.isBossBattle"
           class="chip"
         >
-          Boss 战
+          首领战
         </span>
         <span class="chip">回合 {{ battleStore.turn }}</span>
       </div>
@@ -45,13 +45,13 @@
       v-else
       class="battle-layout"
     >
-      <!-- 顶部横幅集中展示章节剧情、Boss 状态和攻击意图。 -->
+      <!-- 顶部横幅集中展示章节剧情、首领状态和攻击意图。 -->
       <section
         class="panel boss-banner"
         :class="{ 'boss-banner--boss': battleStore.isBossBattle }"
       >
         <div class="panel__eyebrow">
-          {{ battleStore.isBossBattle ? "Boss 协议" : "区域战报" }}
+          {{ battleStore.isBossBattle ? "首领预警" : "区域战报" }}
         </div>
         <div class="boss-banner__layout">
           <div>
@@ -104,7 +104,7 @@
         <article class="panel combatant-card combatant-card--enemy">
           <div class="panel__eyebrow">敌人</div>
           <h2 class="panel__title">{{ enemy.name }}</h2>
-          <p class="combatant-card__subtitle">第 {{ enemy.chapterId }} 章的 {{ enemy.role }}</p>
+          <p class="combatant-card__subtitle">第 {{ enemy.chapterId }} 章的 {{ enemyRoleLabel }}</p>
           <StatBar
             label="HP"
             :value="battleStore.enemyHp"
@@ -211,6 +211,9 @@ const enemy = computed(() => battleStore.enemy);
 const playerSnapshot = computed(() => battleStore.playerSnapshot);
 const chapter = computed(() =>
   enemy.value ? getChapterById(enemy.value.chapterId) : null,
+);
+const enemyRoleLabel = computed(() =>
+  enemy.value?.role === "Boss" ? "首领" : enemy.value?.role ?? "未知敌人",
 );
 const rewardItemName = computed(() => {
   const rewardItemId = battleStore.battleResult?.rewardItemId;

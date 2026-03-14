@@ -11,5 +11,5 @@ import { RouterView } from "vue-router";
 
 import GlobalNav from "./components/common/GlobalNav.vue";
 
-// App.vue 只负责拼装整个项目的通用外壳。
+// 这里是应用总外壳，只负责拼装常驻导航和当前路由页面。
 </script>

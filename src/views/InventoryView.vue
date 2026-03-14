@@ -161,7 +161,7 @@ import StatBar from "../components/common/StatBar.vue";
 import { getItemById } from "../data/items";
 import { useGameStore } from "../stores/game";
 
-// 背包页尽量保持轻量，所有变更都交给主 store 处理。
+// 背包页尽量保持轻量，所有变更都交给主状态仓库处理。
 const router = useRouter();
 const gameStore = useGameStore();
 const feedback = ref("");
@@ -207,7 +207,7 @@ function useItem(itemId) {
     : "这个道具当前无法使用。";
 }
 
-// 装备切换统一交给 store 处理，属性重算只保留一套逻辑。
+// 装备切换统一交给状态仓库处理，属性重算只保留一套逻辑。
 function toggleEquip(itemId) {
   const item = getItemById(itemId);
   const changed = gameStore.equipItem(itemId);

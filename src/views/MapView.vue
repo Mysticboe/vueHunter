@@ -253,7 +253,7 @@ function startBattle(enemyId) {
   router.push(`/battle/${enemyId}`);
 }
 
-// 章节训练通过 query 参数决定模式和章节。
+// 章节训练通过地址参数决定模式和章节。
 function openChapterDrill() {
   router.push({
     path: "/practice",

@@ -1,4 +1,4 @@
-/* Global theme tokens and shared colors for the game's retro presentation. */
+/* 全局主题变量与复古像素风通用配色。 */
 :root {
   color-scheme: dark;
   font-family: "Courier New", "Lucida Console", monospace;
@@ -28,7 +28,7 @@
   --pixel-border: rgba(255, 232, 188, 0.12);
 }
 
-/* Basic reset rules and layered page background. */
+/* 基础重置规则与分层页面背景。 */
 * {
   box-sizing: border-box;
 }
@@ -99,7 +99,7 @@ a {
   padding-bottom: 32px;
 }
 
-/* Persistent application shell and top navigation. */
+/* 常驻应用外壳与顶部导航。 */
 .global-nav {
   position: sticky;
   top: 0;
@@ -183,7 +183,7 @@ a {
   font-size: 0.74rem;
 }
 
-/* Shared panel framing used across every route. */
+/* 各页面共用的面板框体样式。 */
 .panel {
   position: relative;
   padding: 24px;
@@ -229,7 +229,7 @@ a {
   letter-spacing: 0.04em;
 }
 
-/* Reusable controls for buttons, chips, and tags. */
+/* 按钮、徽记和标签的复用控件样式。 */
 .button {
   display: inline-flex;
   align-items: center;
@@ -295,7 +295,7 @@ a {
   gap: 10px;
 }
 
-/* Home screen hero and feature-grid styling. */
+/* 首页主视觉与功能卡片网格样式。 */
 .hero-panel {
   overflow: hidden;
 }
@@ -364,7 +364,7 @@ a {
   background: rgba(255, 255, 255, 0.02);
 }
 
-/* Shared layout primitives for map, utility screens, and practice reports. */
+/* 地图、功能页和练习报告共用的布局基础样式。 */
 .hero-stat__label,
 .hud-stat span,
 .summary-grid span,
@@ -447,7 +447,7 @@ a {
   flex-wrap: wrap;
 }
 
-/* Quest board and chapter map presentation. */
+/* 任务看板与章节地图的展示样式。 */
 .quest-board {
   border-color: rgba(227, 159, 60, 0.2);
   background:
@@ -556,7 +556,7 @@ a {
   gap: 10px;
 }
 
-/* Encounter and answer controls reuse the same tactile button treatment. */
+/* 遭遇按钮和答题按钮沿用同一套像素按键手感。 */
 .encounter-button,
 .answer-button,
 .action-chip {
@@ -614,7 +614,7 @@ a {
   background: rgba(255, 255, 255, 0.02);
 }
 
-/* Shared card list presentation for codex, inventory, and handbook sections. */
+/* 图鉴、背包和手册列表共用的卡片展示样式。 */
 .card-list {
   display: grid;
   gap: 14px;
@@ -645,7 +645,7 @@ a {
   margin: 6px 0;
 }
 
-/* Battle layout, boss banner, and turn prompt styling. */
+/* 战斗布局、首领横幅与回合提示样式。 */
 .battle-layout {
   display: grid;
   gap: 18px;
@@ -748,7 +748,7 @@ a {
   line-height: 1;
 }
 
-/* Question and result surfaces shared by battle and practice flows. */
+/* 战斗与练习流程共用的题目区和结果区样式。 */
 .question-card {
   padding: 18px;
   border-radius: 20px;
@@ -931,7 +931,7 @@ a {
   place-items: start;
 }
 
-/* Animation and responsive breakpoints. */
+/* 动画与响应式断点。 */
 @keyframes boss-pulse {
   0%,
   100% {

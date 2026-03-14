@@ -62,10 +62,10 @@
       </article>
 
       <article class="panel feature-card">
-        <div class="panel__eyebrow">Boss</div>
-        <h2 class="panel__title">Boss 战已经支持阶段变化</h2>
+        <div class="panel__eyebrow">首领</div>
+        <h2 class="panel__title">首领战已经支持阶段变化</h2>
         <p>
-          后期 Boss 会在战斗中途进入新阶段、改变攻击意图，节奏也会和普通战不同。
+          后期首领会在战斗中途进入新阶段、改变攻击意图，节奏也会和普通战不同。
         </p>
       </article>
     </section>

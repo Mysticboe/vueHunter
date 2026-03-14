@@ -57,7 +57,7 @@ function getEnemyIntent(enemy, bossPhase, turn) {
   return turn % 2 === 0 ? "过载连击" : "狂怒斩击";
 }
 
-// 战斗评级由正确率、连击表现和 Boss 阶段处理共同决定。
+// 战斗评级由正确率、连击表现和首领阶段处理共同决定。
 function buildBattleRank({ isBossBattle, perfectClear, maxCombo, bossPhaseTriggered }) {
   if (perfectClear && maxCombo >= 4) {
     return "S";
@@ -78,7 +78,7 @@ export const useBattleStore = defineStore("battle", {
   state: () => createBattleState(),
 
   getters: {
-    // MVP 中技能攻击统一消耗固定 MP。
+    // 目前版本里，技能攻击统一消耗固定 MP。
     canUseSkill: (state) => state.playerSnapshot?.mp >= 10,
     isBossBattle: (state) => state.enemy?.role === "Boss",
     // 界面会把敌人意图当成回合提示显示出来。
@@ -187,7 +187,7 @@ export const useBattleStore = defineStore("battle", {
       this.currentQuestion = nextQuestion;
     },
 
-    // Boss 掉到半血以下时会触发一次性的阶段切换。
+    // 首领掉到半血以下时会触发一次性的阶段切换。
     maybeTriggerBossPhase() {
       if (!this.enemy || this.enemy.role !== "Boss" || this.bossPhaseTriggered) {
         return null;
@@ -258,10 +258,6 @@ export const useBattleStore = defineStore("battle", {
           );
           effectLine =
             nextCombo >= 3
-              ? "Correct answer. Basic Strike extends the combo."
-              : "回答正确，普通攻击命中。";
-          effectLine =
-            nextCombo >= 3
               ? "回答正确，普通攻击延续了连击。"
               : "回答正确，普通攻击命中。";
         }
@@ -286,10 +282,6 @@ export const useBattleStore = defineStore("battle", {
           );
           effectLine =
             nextCombo >= 2
-              ? "Correct answer. Debug Guard holds the combo and softens the hit."
-              : "回答正确，调试防御减轻了敌人的反击。";
-          effectLine =
-            nextCombo >= 2
               ? "回答正确，调试防御保住了连击并削弱了下一次受击。"
               : "回答正确，调试防御减轻了敌人的反击。";
         }
@@ -307,7 +299,7 @@ export const useBattleStore = defineStore("battle", {
       this.comboStreak = nextCombo;
       this.maxCombo = Math.max(this.maxCombo, nextCombo);
 
-      // Boss 二阶段会降低玩家造成的伤害，让阶段差异更明显。
+      // 首领二阶段会降低玩家造成的伤害，让阶段差异更明显。
       if (playerDamage > 0 && this.enemy.role === "Boss" && this.bossPhase === 2) {
         playerDamage = Math.max(3, Math.round(playerDamage * 0.82));
       }

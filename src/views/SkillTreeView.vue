@@ -116,7 +116,7 @@ const skillCards = computed(() =>
   })),
 );
 
-// 技能解锁统一走 store，条件校验只维护一份。
+// 技能解锁统一走状态仓库，条件校验只维护一份。
 function unlockSkill(skillId) {
   const skill = getSkillById(skillId);
   const unlocked = gameStore.unlockSkill(skillId);
