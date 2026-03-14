@@ -39,6 +39,7 @@
     </header>
 
     <section class="utility-grid">
+      <!-- The codex reveals enemies only after the player has met them in battle. -->
       <section class="panel panel--wide">
         <div class="panel__eyebrow">Monster Codex</div>
         <h2 class="panel__title">Encountered foes</h2>
@@ -62,6 +63,7 @@
         </div>
       </section>
 
+      <!-- Milestones give the player persistent goals outside raw chapter completion. -->
       <section class="panel panel--wide">
         <div class="panel__eyebrow">Milestones</div>
         <h2 class="panel__title">Long-form progress</h2>
@@ -81,6 +83,7 @@
         </div>
       </section>
 
+      <!-- Knowledge atlas doubles as a launchpad for chapter drill sessions. -->
       <section class="panel">
         <div class="panel__eyebrow">Knowledge Atlas</div>
         <h2 class="panel__title">Chapter tags</h2>
@@ -115,6 +118,7 @@
         </div>
       </section>
 
+      <!-- The wrong-answer book is the direct feed into focused review practice. -->
       <section class="panel panel--wide">
         <div class="panel__eyebrow">Wrong Answer Book</div>
         <div class="utility-header utility-header--compact">
@@ -184,11 +188,14 @@ import { chapters } from "../data/chapters";
 import { enemies } from "../data/enemies";
 import { useGameStore } from "../stores/game";
 
+// Handbook aggregates codex, milestones, chapter notes, and wrong-answer review tools.
 const router = useRouter();
 const gameStore = useGameStore();
 const activeFilter = ref("all");
+// This flag keeps review CTAs disabled until there is backlog to revisit.
 const hasWrongQuestions = computed(() => gameStore.player.wrongQuestions.length > 0);
 
+// Chapter filters are reused by the wrong-answer book to narrow the review list.
 const filters = [
   { label: "All", value: "all" },
   ...chapters.map((chapter) => ({
@@ -197,6 +204,7 @@ const filters = [
   })),
 ];
 
+// Enrich enemies with encounter state for locked-versus-known codex rendering.
 const codexEntries = computed(() =>
   enemies.map((enemy) => ({
     ...enemy,
@@ -204,6 +212,7 @@ const codexEntries = computed(() =>
   })),
 );
 
+// Filter the wrong-answer book without mutating the stored backlog order.
 const filteredWrongQuestions = computed(() => {
   if (activeFilter.value === "all") {
     return gameStore.player.wrongQuestions;
@@ -214,6 +223,7 @@ const filteredWrongQuestions = computed(() => {
   );
 });
 
+// Practice routing supports both review mode and explicit chapter drill mode.
 function openPractice({ mode = "review", filter = "all" } = {}) {
   if (mode === "drill" && filter !== "all") {
     router.push({

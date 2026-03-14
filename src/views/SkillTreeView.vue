@@ -30,6 +30,7 @@
       </div>
     </header>
 
+    <!-- Summary keeps the unlock economy visible before the player spends points. -->
     <section class="panel utility-summary">
       <div class="summary-grid">
         <div>
@@ -53,6 +54,7 @@
       </p>
     </section>
 
+    <!-- Skill cards are generated entirely from skill data plus current player state. -->
     <section class="skill-grid">
       <article
         v-for="skill in skillCards"
@@ -97,10 +99,12 @@ import { useRouter } from "vue-router";
 import { getSkillById, skills } from "../data/skills";
 import { useGameStore } from "../stores/game";
 
+// The skill tree is a read-heavy screen backed by one unlock action.
 const router = useRouter();
 const gameStore = useGameStore();
 const feedback = ref("");
 
+// Enrich each skill with ownership state and readable prerequisite names for the UI.
 const skillCards = computed(() =>
   skills.map((skill) => ({
     ...skill,
@@ -112,6 +116,7 @@ const skillCards = computed(() =>
   })),
 );
 
+// Unlock attempts route through the store so requirements stay enforced in one place.
 function unlockSkill(skillId) {
   const skill = getSkillById(skillId);
   const unlocked = gameStore.unlockSkill(skillId);
@@ -120,4 +125,3 @@ function unlockSkill(skillId) {
     : "That skill is not available yet.";
 }
 </script>
-

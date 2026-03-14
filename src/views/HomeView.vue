@@ -26,6 +26,7 @@
         </button>
       </div>
 
+      <!-- The home hero highlights the current build scope at a glance. -->
       <div class="hero__stats">
         <div class="hero-stat">
           <span class="hero-stat__label">Current build</span>
@@ -42,6 +43,7 @@
       </div>
     </section>
 
+    <!-- These cards explain what the current MVP already supports. -->
     <section class="feature-grid">
       <article class="panel feature-card">
         <div class="panel__eyebrow">Loop</div>
@@ -71,6 +73,7 @@
       </article>
     </section>
 
+    <!-- Returning players get their active quest board directly on the home screen. -->
     <QuestBoard
       v-if="gameStore.hasProgress"
       class="home-view__quest-board"
@@ -86,19 +89,23 @@ import QuestBoard from "../components/common/QuestBoard.vue";
 import { chapters } from "../data/chapters";
 import { useGameStore } from "../stores/game";
 
+// Home acts as the onboarding hub for starting or resuming a run.
 const router = useRouter();
 const gameStore = useGameStore();
+// Chapter count and build label stay data-driven as the project grows.
 const chapterCount = computed(() => chapters.length);
 const buildLabel = computed(() => {
   const numerals = ["I", "II", "III", "IV", "V", "VI", "VII"];
   return `Alpha ${numerals[Math.max(0, chapterCount.value - 1)] ?? chapterCount.value}`;
 });
 
+// Starting a new run resets the store and immediately sends the player to the map.
 function handleNewGame() {
   gameStore.startNewGame();
   router.push("/map");
 }
 
+// Continue only routes away when there is meaningful progress to resume.
 function handleContinue() {
   if (!gameStore.hasProgress) {
     return;

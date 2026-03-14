@@ -54,6 +54,7 @@
       v-else
       class="map-layout"
     >
+      <!-- The left column is the progression spine: quest board plus chapter cards. -->
       <div class="chapter-grid">
         <QuestBoard />
 
@@ -70,6 +71,7 @@
         />
       </div>
 
+      <!-- The right column is town management: stats, review, and utility actions. -->
       <aside class="map-sidebar">
         <section class="panel sidebar-card">
           <div class="panel__eyebrow">Hunter Sheet</div>
@@ -209,10 +211,12 @@ import { chapters } from "../data/chapters";
 import { enemies } from "../data/enemies";
 import { useGameStore } from "../stores/game";
 
+// The map is the main progression hub for the single-player run.
 const router = useRouter();
 const gameStore = useGameStore();
 const campMessage = ref("");
 
+// Merge static chapter data with live progress so the template stays declarative.
 const chapterCards = computed(() =>
   chapters.map((chapter) => {
     const chapterEnemies = enemies.filter((enemy) => enemy.chapterId === chapter.id);
@@ -228,6 +232,7 @@ const chapterCards = computed(() =>
   }),
 );
 
+// Suggest a drill chapter based on the next frontier, falling back to the latest unlocked area.
 const recommendedDrillChapterId = computed(() => {
   const targetChapterId = gameStore.nextTargetChapter?.id;
 
@@ -238,14 +243,17 @@ const recommendedDrillChapterId = computed(() => {
   return gameStore.player.unlockedChapters.at(-1) ?? 1;
 });
 
+// Fresh runs skip the home screen loop and immediately unlock the map.
 function startFreshRun() {
   gameStore.startNewGame();
 }
 
+// Encounters are route-driven, so the map only needs to push the selected enemy id.
 function startBattle(enemyId) {
   router.push(`/battle/${enemyId}`);
 }
 
+// Chapter drills are launched as query-driven practice routes.
 function openChapterDrill() {
   router.push({
     path: "/practice",
@@ -256,11 +264,13 @@ function openChapterDrill() {
   });
 }
 
+// Reset returns the player to the home screen after wiping the save.
 function resetRun() {
   gameStore.resetGame();
   router.push("/");
 }
 
+// Camp rest is duplicated here for quick between-battle recovery.
 function restAtCamp() {
   const rested = gameStore.restAtCamp();
 

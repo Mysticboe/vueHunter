@@ -24,6 +24,7 @@
     </header>
 
     <section class="utility-grid">
+      <!-- The left column controls mode, target chapter, and live session metrics. -->
       <section class="panel">
         <div class="panel__eyebrow">Session</div>
         <h2 class="panel__title">{{ sessionTitle }}</h2>
@@ -92,6 +93,7 @@
         </p>
       </section>
 
+      <!-- The right column swaps between the active prompt, report, or empty state. -->
       <section class="panel panel--wide practice-panel">
         <template v-if="currentQuestion">
           <div class="panel__eyebrow">Current Prompt</div>
@@ -161,6 +163,7 @@
           </div>
         </template>
 
+        <!-- Finished sessions show a compact report before the player restarts. -->
         <section
           v-else-if="sessionFinished"
           class="practice-report"
@@ -222,6 +225,7 @@
           </div>
         </section>
 
+        <!-- Empty state covers both no-backlog review mode and unavailable drill state. -->
         <section
           v-else
           class="empty-panel practice-empty"
@@ -261,6 +265,7 @@ import { useGameStore } from "../stores/game";
 
 const DRILL_SESSION_SIZE = 5;
 
+// Session metrics feed the live summary and the end-of-run report card.
 function createSessionStats() {
   return {
     asked: 0,
@@ -273,6 +278,7 @@ function createSessionStats() {
   };
 }
 
+// Shuffle drill prompts so chapter training feels less predictable between runs.
 function shuffleEntries(entries) {
   const nextEntries = [...entries];
 
@@ -286,6 +292,7 @@ function shuffleEntries(entries) {
   return nextEntries;
 }
 
+// Practice ranking is intentionally simple so players can read their result quickly.
 function buildPracticeRank(accuracy, bestStreak, missedAnswers) {
   if (accuracy === 100 && bestStreak >= 4) {
     return "S";
@@ -302,6 +309,7 @@ function buildPracticeRank(accuracy, bestStreak, missedAnswers) {
   return "C";
 }
 
+// Practice view supports both wrong-answer cleanup and proactive chapter drills.
 const router = useRouter();
 const route = useRoute();
 const gameStore = useGameStore();
@@ -310,6 +318,7 @@ const sessionQueue = ref([]);
 const sessionStats = ref(createSessionStats());
 const outcome = ref(null);
 
+// Query params drive mode selection so handbook and map links can deep-link into practice.
 const practiceMode = computed(() => {
   const rawMode = Array.isArray(route.query.mode)
     ? route.query.mode[0]
@@ -318,10 +327,12 @@ const practiceMode = computed(() => {
   return rawMode === "drill" ? "drill" : "review";
 });
 
+// Drill mode only exposes chapters the player has already unlocked.
 const unlockedChapters = computed(() =>
   chapters.filter((chapter) => gameStore.player.unlockedChapters.includes(chapter.id)),
 );
 
+// Review mode can target any chapter filter, while drill mode falls back to the first unlocked chapter.
 const selectedChapterId = computed(() => {
   const rawChapterId = Array.isArray(route.query.chapter)
     ? route.query.chapter[0]
@@ -341,6 +352,7 @@ const selectedChapterId = computed(() => {
     : null;
 });
 
+// Chapter metadata is reused across labels, headings, and report copy.
 const selectedChapter = computed(() =>
   selectedChapterId.value ? getChapterById(selectedChapterId.value) : null,
 );
@@ -375,6 +387,7 @@ const practiceDescription = computed(() => {
   return "Review mode cycles unresolved prompts until you answer them correctly. Correct answers remove them from the wrong-answer book.";
 });
 
+// Review entries preserve backlog order using miss count and last-seen timestamp.
 function getReviewEntries(chapterId = null) {
   return gameStore.player.wrongQuestions
     .filter((entry) => chapterId === null || entry.chapterId === chapterId)
@@ -401,6 +414,7 @@ function getReviewEntries(chapterId = null) {
     });
 }
 
+// Drill entries come from the chapter bank and are capped for a short focused session.
 function getDrillEntries(chapterId) {
   if (!chapterId) {
     return [];
@@ -409,12 +423,14 @@ function getDrillEntries(chapterId) {
   return shuffleEntries(getQuestionsByChapterId(chapterId)).slice(0, DRILL_SESSION_SIZE);
 }
 
+// Build the active queue from the current practice mode and route filter.
 function buildSessionQueue() {
   return practiceMode.value === "drill"
     ? getDrillEntries(selectedChapterId.value)
     : getReviewEntries(selectedChapterId.value);
 }
 
+// Review filters mirror handbook filters, while drills only show unlocked chapters.
 const reviewFilters = computed(() => [
   {
     label: "All",
@@ -445,6 +461,7 @@ const activeFilters = computed(() =>
   practiceMode.value === "drill" ? drillFilters.value : reviewFilters.value,
 );
 
+// Keep the selected filter shape compatible with both string and numeric filter values.
 const currentFilterValue = computed(() => {
   if (practiceMode.value === "drill") {
     return selectedChapterId.value;
@@ -453,6 +470,7 @@ const currentFilterValue = computed(() => {
   return selectedChapterId.value ?? "all";
 });
 
+// Derived session state powers prompt headers, reports, and empty screens.
 const currentQuestion = computed(() => sessionQueue.value[0] ?? null);
 const sessionFinished = computed(() => !currentQuestion.value && sessionStats.value.asked > 0);
 const accuracy = computed(() => {
@@ -612,6 +630,7 @@ function questionTypeLabel(type) {
   return "Single Choice";
 }
 
+// One answer updates the session report and, when relevant, the wrong-answer backlog.
 function submitAnswer(option) {
   if (!currentQuestion.value || outcome.value) {
     return;
@@ -655,6 +674,7 @@ function submitAnswer(option) {
   };
 }
 
+// Review mode repeats misses, while drill mode advances after one pass per prompt.
 function advancePrompt() {
   if (!currentQuestion.value || !outcome.value) {
     return;
@@ -673,5 +693,6 @@ function advancePrompt() {
   outcome.value = null;
 }
 
+// Any mode or filter change starts a fresh local practice session.
 watch([practiceMode, selectedChapterId], resetSession, { immediate: true });
 </script>

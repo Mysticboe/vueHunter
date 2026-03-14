@@ -31,6 +31,7 @@
     </header>
 
     <section class="utility-grid">
+      <!-- Hunter sheet mirrors the persistent player state while giving quick rest access. -->
       <section class="panel">
         <div class="panel__eyebrow">Hunter Sheet</div>
         <h2 class="panel__title">{{ gameStore.player.name }}</h2>
@@ -73,6 +74,7 @@
         </div>
       </section>
 
+      <!-- Consumables are rendered from inventory data filtered by item type. -->
       <section class="panel">
         <div class="panel__eyebrow">Consumables</div>
         <h2 class="panel__title">Field recovery</h2>
@@ -107,6 +109,7 @@
         </p>
       </section>
 
+      <!-- Equipment uses the same inventory data but adds equip-state actions. -->
       <section class="panel panel--wide">
         <div class="panel__eyebrow">Equipment</div>
         <h2 class="panel__title">Current build</h2>
@@ -158,10 +161,12 @@ import StatBar from "../components/common/StatBar.vue";
 import { getItemById } from "../data/items";
 import { useGameStore } from "../stores/game";
 
+// Inventory view stays thin by leaning on the shared game store for all mutations.
 const router = useRouter();
 const gameStore = useGameStore();
 const feedback = ref("");
 
+// Normalize inventory entries into display-friendly records by requested item type.
 function toInventoryItems(type) {
   return gameStore.player.inventory
     .map((entry) => {
@@ -184,13 +189,16 @@ function toInventoryItems(type) {
     .filter(Boolean);
 }
 
+// Split the inventory once so the template can render two focused sections.
 const consumables = computed(() => toInventoryItems("consumable"));
 const equipment = computed(() => toInventoryItems("equipment"));
 
+// Equipment is stored by slot, so check against the current equipped record.
 function isEquipped(itemId) {
   return Object.values(gameStore.player.equippedItems).includes(itemId);
 }
 
+// Use feedback text so the player gets confirmation without modal dialogs.
 function useItem(itemId) {
   const item = getItemById(itemId);
   const used = gameStore.useItem(itemId);
@@ -199,6 +207,7 @@ function useItem(itemId) {
     : "That item cannot be used right now.";
 }
 
+// Toggling gear goes through the store so stat recalculation stays centralized.
 function toggleEquip(itemId) {
   const item = getItemById(itemId);
   const changed = gameStore.equipItem(itemId);
@@ -207,6 +216,7 @@ function toggleEquip(itemId) {
     : "That item cannot be equipped.";
 }
 
+// Camp rest mirrors the same action available from the map sidebar.
 function restAtCamp() {
   const rested = gameStore.restAtCamp();
   feedback.value = rested
@@ -214,4 +224,3 @@ function restAtCamp() {
     : "You need at least 14 gold to rest.";
 }
 </script>
-

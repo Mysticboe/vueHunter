@@ -25,6 +25,7 @@
       </div>
     </header>
 
+    <!-- Show a clean fallback if the route points at an invalid enemy id. -->
     <section
       v-if="!enemy || !playerSnapshot"
       class="panel empty-panel"
@@ -44,6 +45,7 @@
       v-else
       class="battle-layout"
     >
+      <!-- The banner frames the region story, boss state, and current intent. -->
       <section
         class="panel boss-banner"
         :class="{ 'boss-banner--boss': battleStore.isBossBattle }"
@@ -69,6 +71,7 @@
         </div>
       </section>
 
+      <!-- Combatant cards keep both sides' stats visible during every turn. -->
       <div class="combatants-grid">
         <article class="panel combatant-card">
           <div class="panel__eyebrow">Hero</div>
@@ -121,6 +124,7 @@
         </article>
       </div>
 
+      <!-- QuestionPanel handles action choice and answer submission for each turn. -->
       <QuestionPanel
         :question="battleStore.currentQuestion"
         :selected-action="battleStore.selectedAction"
@@ -133,6 +137,7 @@
         @next-turn="battleStore.advanceTurn"
       />
 
+      <!-- Result banner is only shown once the encounter has resolved. -->
       <section
         v-if="battleStore.battleResult"
         class="panel result-banner"
@@ -195,11 +200,13 @@ import { getItemById } from "../data/items";
 import { useBattleStore } from "../stores/battle";
 import { useGameStore } from "../stores/game";
 
+// Battle view coordinates route params, persistent run state, and temporary battle state.
 const route = useRoute();
 const router = useRouter();
 const battleStore = useBattleStore();
 const gameStore = useGameStore();
 
+// These computed values keep template bindings readable and focused.
 const enemy = computed(() => battleStore.enemy);
 const playerSnapshot = computed(() => battleStore.playerSnapshot);
 const chapter = computed(() =>
@@ -210,10 +217,12 @@ const rewardItemName = computed(() => {
   return rewardItemId ? getItemById(rewardItemId)?.name ?? null : null;
 });
 
+// Reload the encounter whenever the route param changes.
 function loadBattle() {
   battleStore.startBattle(Number(route.params.enemyId));
 }
 
+// Leaving battle always commits current vitals before resetting temporary state.
 function returnToMap() {
   battleStore.commitProgressOnExit();
   battleStore.resetBattle();
@@ -228,6 +237,7 @@ onMounted(() => {
   loadBattle();
 });
 
+// Route changes can happen from within the app, so watch the enemy id as well.
 watch(
   () => route.params.enemyId,
   () => {
@@ -235,6 +245,7 @@ watch(
   },
 );
 
+// Defensive cleanup keeps stale battle data from leaking across routes.
 onBeforeRouteLeave(() => {
   battleStore.commitProgressOnExit();
   battleStore.resetBattle();
