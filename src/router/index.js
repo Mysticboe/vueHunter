@@ -8,6 +8,7 @@ import MapView from "../views/MapView.vue";
 import PracticeView from "../views/PracticeView.vue";
 import SkillTreeView from "../views/SkillTreeView.vue";
 
+// Keep the route table flat so major game screens are easy to reach and extend.
 const router = createRouter({
   history: createWebHistory(),
   routes: [

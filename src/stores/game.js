@@ -9,6 +9,7 @@ import { clearGameSave, loadGame, saveGame } from "../utils/save";
 
 const CAMP_REST_COST = 14;
 
+// Small stat helpers keep level, gear, and skills composable.
 function createStatBlock() {
   return {
     maxHp: 0,
@@ -18,6 +19,7 @@ function createStatBlock() {
   };
 }
 
+// Merge stat sources into one final combat-ready block.
 function mergeStatBlocks(base, bonus = {}) {
   return {
     maxHp: base.maxHp + (bonus.maxHp ?? 0),
@@ -27,6 +29,7 @@ function mergeStatBlocks(base, bonus = {}) {
   };
 }
 
+// Save files may contain old inventory shapes, so normalize everything here first.
 function normalizeInventory(entries) {
   if (!Array.isArray(entries)) {
     return [];
@@ -57,6 +60,7 @@ function normalizeInventory(entries) {
   }));
 }
 
+// Equipment used to be stored as arrays, so this keeps backward compatibility.
 function normalizeEquippedItems(equippedItems) {
   if (Array.isArray(equippedItems)) {
     return equippedItems.reduce((record, itemId) => {
@@ -85,6 +89,7 @@ function normalizeEquippedItems(equippedItems) {
   }, {});
 }
 
+// Guard against invalid skill ids when hydrating from old or edited saves.
 function normalizeSkillIds(skillIds) {
   if (!Array.isArray(skillIds)) {
     return [];
@@ -93,6 +98,7 @@ function normalizeSkillIds(skillIds) {
   return [...new Set(skillIds.filter((skillId) => getSkillById(skillId)))];
 }
 
+// Equipment bonuses are summed every time the player sheet is recalculated.
 function collectEquipmentBonus(player) {
   return Object.values(player.equippedItems ?? {}).reduce((bonus, itemId) => {
     const item = getItemById(itemId);
@@ -105,6 +111,7 @@ function collectEquipmentBonus(player) {
   }, createStatBlock());
 }
 
+// Learned passive skills affect the same stat pipeline as equipment.
 function collectSkillBonus(player) {
   return player.skills.reduce((bonus, skillId) => {
     const skill = getSkillById(skillId);
@@ -117,6 +124,7 @@ function collectSkillBonus(player) {
   }, createStatBlock());
 }
 
+// Build the starter player with beginner gear already equipped.
 function createFreshPlayer() {
   const baseStats = getStatsForLevel(1);
   const inventory = normalizeInventory([
@@ -158,6 +166,7 @@ function createFreshPlayer() {
   };
 }
 
+// The root state keeps both permanent run progress and long-term achievement data.
 function createFreshState() {
   return {
     version: 4,
@@ -175,6 +184,7 @@ function createFreshState() {
   };
 }
 
+// Merge a save into the current schema while preserving safe fallbacks.
 function mergeSavedState(savedState) {
   const freshState = createFreshState();
   const savedPlayer = savedState?.player ?? {};
@@ -228,14 +238,17 @@ export const useGameStore = defineStore("game", {
   state: () => createFreshState(),
 
   getters: {
+    // A run counts as active as soon as we have meaningful state to resume.
     hasProgress: (state) =>
       state.started ||
       state.clearedEnemies.length > 0 ||
       state.encounteredEnemies.length > 0 ||
       state.lastPlayedAt !== null,
 
+    // Surface the next exp breakpoint for the map and HUD.
     nextLevelExp: (state) => getNextLevelExp(state.player.level),
 
+    // Chapter cards use this to render local progress without duplicating logic.
     chapterProgress: (state) => (chapterId) => {
       const chapter = getChapterById(chapterId);
 
@@ -256,13 +269,16 @@ export const useGameStore = defineStore("game", {
       };
     },
 
+    // Keep the sidebar review board focused on the most recent misses.
     recentWrongQuestions: (state) => state.player.wrongQuestions.slice(0, 4),
 
+    // Count fully cleared chapters for milestones and map progression.
     clearedChaptersCount: (state) =>
       chapters.filter((chapter) =>
         chapter.enemyIds.every((enemyId) => state.clearedEnemies.includes(enemyId)),
       ).length,
 
+    // Point the player toward the next useful chapter, unlocked or not yet open.
     nextTargetChapter: (state) => {
       const unlockedOpenChapter = chapters.find((chapter) => {
         if (!state.player.unlockedChapters.includes(chapter.id)) {
@@ -283,6 +299,7 @@ export const useGameStore = defineStore("game", {
       ) ?? null;
     },
 
+    // Build the quest-board headline from whichever chapter is currently most relevant.
     activeQuest() {
       const targetChapter = this.nextTargetChapter;
 
@@ -319,6 +336,7 @@ export const useGameStore = defineStore("game", {
       };
     },
 
+    // Keep the quest board checklist short and directly actionable.
     questChecklist() {
       const targetChapter = this.nextTargetChapter;
       const nextBoss = enemies.find((enemy) => {
@@ -352,6 +370,7 @@ export const useGameStore = defineStore("game", {
       ];
     },
 
+    // Milestones provide long-term goals beyond simple chapter completion.
     milestoneCards() {
       return [
         {
@@ -393,6 +412,7 @@ export const useGameStore = defineStore("game", {
       ];
     },
 
+    // Skills can only unlock when the run satisfies level, chapter, and prerequisite gates.
     canUnlockSkill: (state) => (skillId) => {
       const skill = getSkillById(skillId);
 
@@ -421,11 +441,13 @@ export const useGameStore = defineStore("game", {
       );
     },
 
+    // Inventory views ask for quantities by item id.
     itemQuantity: (state) => (itemId) =>
       state.player.inventory.find((entry) => entry.itemId === itemId)?.quantity ?? 0,
   },
 
   actions: {
+    // Boot-time hydrate keeps old saves compatible with the newest schema.
     hydrateFromSave() {
       const savedState = loadGame();
 
@@ -437,6 +459,7 @@ export const useGameStore = defineStore("game", {
       this.recalculatePlayer(false);
     },
 
+    // Autosave subscribes once and then mirrors every state change to localStorage.
     enableAutoSave() {
       if (this._autoSaveReady) {
         return;
@@ -452,6 +475,7 @@ export const useGameStore = defineStore("game", {
       this._autoSaveReady = true;
     },
 
+    // Starting fresh clears all progression while preserving current game rules.
     startNewGame() {
       this.$patch(createFreshState());
       this.started = true;
@@ -459,11 +483,13 @@ export const useGameStore = defineStore("game", {
       this.recalculatePlayer(true);
     },
 
+    // Reset is the hard wipe used from the map town menu.
     resetGame() {
       this.$patch(createFreshState());
       clearGameSave();
     },
 
+    // Rebuild the derived player sheet whenever exp, gear, or skills change.
     recalculatePlayer(restoreVitals = false) {
       const currentHp = this.player.hp;
       const currentMp = this.player.mp;
@@ -490,18 +516,21 @@ export const useGameStore = defineStore("game", {
       }
     },
 
+    // Sync battle-ending vitals back into the persistent run state.
     syncVitals(nextHp, nextMp) {
       this.player.hp = Math.max(0, Math.min(Math.round(nextHp), this.player.maxHp));
       this.player.mp = Math.max(0, Math.min(Math.round(nextMp), this.player.maxMp));
       this.lastPlayedAt = Date.now();
     },
 
+    // Consumables and camp rest both route through this small healing helper.
     healPlayer(effect = {}) {
       this.player.hp = Math.min(this.player.maxHp, this.player.hp + (effect.hp ?? 0));
       this.player.mp = Math.min(this.player.maxMp, this.player.mp + (effect.mp ?? 0));
       this.lastPlayedAt = Date.now();
     },
 
+    // Rewards and drops use the same inventory insertion path.
     addItem(itemId, quantity = 1) {
       const item = getItemById(itemId);
 
@@ -520,6 +549,7 @@ export const useGameStore = defineStore("game", {
       return true;
     },
 
+    // Consumables apply their effect immediately and then reduce stack count.
     useItem(itemId) {
       const item = getItemById(itemId);
       const inventoryEntry = this.player.inventory.find((entry) => entry.itemId === itemId);
@@ -540,6 +570,7 @@ export const useGameStore = defineStore("game", {
       return true;
     },
 
+    // Equipping the same item twice acts as a toggle for that slot.
     equipItem(itemId) {
       const item = getItemById(itemId);
       const inventoryEntry = this.player.inventory.find((entry) => entry.itemId === itemId);
@@ -559,6 +590,7 @@ export const useGameStore = defineStore("game", {
       return true;
     },
 
+    // Skills permanently modify the player sheet and spend skill points.
     unlockSkill(skillId) {
       const skill = getSkillById(skillId);
 
@@ -573,6 +605,7 @@ export const useGameStore = defineStore("game", {
       return true;
     },
 
+    // Camp rest trades gold for a guaranteed refill between encounters.
     restAtCamp() {
       if (this.player.gold < CAMP_REST_COST) {
         return false;
@@ -585,12 +618,14 @@ export const useGameStore = defineStore("game", {
       return true;
     },
 
+    // Encounter tracking feeds the handbook even if the player loses the fight.
     markEnemyEncountered(enemyId) {
       if (!this.encounteredEnemies.includes(enemyId)) {
         this.encounteredEnemies.push(enemyId);
       }
     },
 
+    // Wrong answers are deduplicated and promoted to the top of the review backlog.
     recordWrongQuestion(question) {
       const existing = this.player.wrongQuestions.find(
         (entry) => entry.id === question.id,
@@ -615,6 +650,7 @@ export const useGameStore = defineStore("game", {
       this.player.wrongQuestions = this.player.wrongQuestions.slice(0, 16);
     },
 
+    // Correct review or drill answers can remove a prompt from the backlog.
     resolveWrongQuestion(questionId) {
       const nextWrongQuestions = this.player.wrongQuestions.filter(
         (entry) => entry.id !== Number(questionId),
@@ -629,6 +665,7 @@ export const useGameStore = defineStore("game", {
       return true;
     },
 
+    // Battle milestones update achievement cards without mixing with reward logic.
     recordBattleMilestone({ enemyId, maxCombo = 0, perfectClear = false, enemyRole = "Scout" }) {
       this.achievements.totalVictories += 1;
       this.achievements.highestCombo = Math.max(
@@ -645,6 +682,7 @@ export const useGameStore = defineStore("game", {
       }
     },
 
+    // Victory handles first-clear rewards, chapter unlocks, and any level-up fallout.
     applyVictory(enemyId, nextVitals = null) {
       const enemy = getEnemyById(enemyId);
 
@@ -734,6 +772,7 @@ export const useGameStore = defineStore("game", {
       };
     },
 
+    // Defeat leaves the player wounded but always able to continue the run.
     applyDefeat(nextVitals = null) {
       if (nextVitals) {
         this.syncVitals(nextVitals.hp, nextVitals.mp);

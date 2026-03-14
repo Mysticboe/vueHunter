@@ -14,6 +14,7 @@
       </div>
     </div>
 
+    <!-- Action chips let the player translate a correct answer into a combat style. -->
     <div class="action-strip">
       <button
         v-for="action in actionOptions"
@@ -29,6 +30,7 @@
       </button>
     </div>
 
+    <!-- The question body supports standard options and optional code snippets. -->
     <div
       v-if="question"
       class="question-card"
@@ -52,6 +54,7 @@
       </div>
     </div>
 
+    <!-- Outcome feedback stays on-screen until the player manually advances the turn. -->
     <div
       v-if="lastOutcome"
       class="result-card"
@@ -87,6 +90,7 @@
 <script setup>
 import { computed } from "vue";
 
+// Props mirror the temporary battle store and keep the panel stateless.
 const props = defineProps({
   question: {
     type: Object,
@@ -114,8 +118,10 @@ const props = defineProps({
   },
 });
 
+// The parent view handles all battle mutations; this panel only emits intent.
 defineEmits(["select-action", "answer", "next-turn"]);
 
+// The action list is computed so the skill button can reflect live MP availability.
 const actionOptions = computed(() => [
   {
     value: "attack",
@@ -139,6 +145,7 @@ const actionOptions = computed(() => [
   },
 ]);
 
+// Show the readable label for the currently selected action chip.
 const actionLabel = computed(() => {
   return (
     actionOptions.value.find((option) => option.value === props.selectedAction)
@@ -146,6 +153,7 @@ const actionLabel = computed(() => {
   );
 });
 
+// Translate internal question types into UI labels.
 const questionTypeLabel = computed(() => {
   if (props.question?.type === "judge") {
     return "Judge";
@@ -158,5 +166,6 @@ const questionTypeLabel = computed(() => {
   return "Single Choice";
 });
 
+// Options may change per prompt type, so expose them through one computed source.
 const answerOptions = computed(() => props.question?.options ?? []);
 </script>

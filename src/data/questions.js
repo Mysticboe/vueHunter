@@ -1,3 +1,4 @@
+// The question bank powers battles, backlog review, and chapter drills from one source.
 export const questions = [
   {
     id: 1001,
@@ -574,16 +575,19 @@ export const questions = [
   },
 ];
 
+// Direct lookup is used for wrong-answer recovery and route-driven practice flows.
 export function getQuestionById(questionId) {
   return questions.find((question) => question.id === Number(questionId)) ?? null;
 }
 
+// Enemy encounters store only question ids, so this helper hydrates the full prompt objects.
 export function getQuestionsByIds(questionIds) {
   return questionIds
     .map((questionId) => getQuestionById(questionId))
     .filter(Boolean);
 }
 
+// Chapter drills pull from the same bank, grouped by chapter id.
 export function getQuestionsByChapterId(chapterId) {
   return questions.filter((question) => question.chapterId === Number(chapterId));
 }

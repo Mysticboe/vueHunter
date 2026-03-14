@@ -5,12 +5,14 @@ import { getQuestionsByIds } from "../data/questions";
 import { calcDamage } from "../utils/calcDamage";
 import { useGameStore } from "./game";
 
+// Different prompt types slightly shift damage so code questions feel punchier.
 const QUESTION_DAMAGE_SCALE = {
   single: 1,
   judge: 0.92,
   code: 1.22,
 };
 
+// Battle state is reset per encounter and never persisted directly.
 function createBattleState() {
   return {
     status: "idle",
@@ -33,10 +35,12 @@ function createBattleState() {
   };
 }
 
+// Resolve the damage multiplier from the active prompt type.
 function getQuestionScale(questionType) {
   return QUESTION_DAMAGE_SCALE[questionType] ?? 1;
 }
 
+// Enemy intent text gives the UI a readable preview of the next counterattack.
 function getEnemyIntent(enemy, bossPhase, turn) {
   if (!enemy) {
     return null;
@@ -53,6 +57,7 @@ function getEnemyIntent(enemy, bossPhase, turn) {
   return turn % 2 === 0 ? "Overload barrage" : "Enraged strike";
 }
 
+// End-of-fight rank is based on cleanliness, combo skill, and boss handling.
 function buildBattleRank({ isBossBattle, perfectClear, maxCombo, bossPhaseTriggered }) {
   if (perfectClear && maxCombo >= 4) {
     return "S";
@@ -73,16 +78,20 @@ export const useBattleStore = defineStore("battle", {
   state: () => createBattleState(),
 
   getters: {
+    // Skill attacks cost a flat amount of MP in the MVP.
     canUseSkill: (state) => state.playerSnapshot?.mp >= 10,
     isBossBattle: (state) => state.enemy?.role === "Boss",
+    // The UI shows intent as a computed read-only battle hint.
     enemyIntent: (state) => getEnemyIntent(state.enemy, state.bossPhase, state.turn),
   },
 
   actions: {
+    // Reset is called when leaving battle routes or starting a new encounter.
     resetBattle() {
       this.$patch(createBattleState());
     },
 
+    // Initialize one encounter from enemy data plus the current persistent player sheet.
     startBattle(enemyId) {
       const gameStore = useGameStore();
       const enemy = getEnemyById(enemyId);
@@ -127,6 +136,7 @@ export const useBattleStore = defineStore("battle", {
       return true;
     },
 
+    // If the player leaves mid-fight, keep the current HP and MP changes.
     commitProgressOnExit() {
       if (!this.playerSnapshot || !["in_progress", "resolved"].includes(this.status)) {
         return;
@@ -136,6 +146,7 @@ export const useBattleStore = defineStore("battle", {
       gameStore.syncVitals(this.playerSnapshot.hp, this.playerSnapshot.mp);
     },
 
+    // Action selection is only mutable while waiting for an answer.
     setSelectedAction(action) {
       if (this.status !== "in_progress") {
         return;
@@ -148,6 +159,7 @@ export const useBattleStore = defineStore("battle", {
       this.selectedAction = action;
     },
 
+    // Draw a question without repeating until the local encounter pool is exhausted.
     drawQuestion() {
       if (!this.enemy) {
         this.currentQuestion = null;
@@ -175,6 +187,7 @@ export const useBattleStore = defineStore("battle", {
       this.currentQuestion = nextQuestion;
     },
 
+    // Bosses gain a one-time phase shift once they drop below half health.
     maybeTriggerBossPhase() {
       if (!this.enemy || this.enemy.role !== "Boss" || this.bossPhaseTriggered) {
         return null;
@@ -199,6 +212,7 @@ export const useBattleStore = defineStore("battle", {
       return phaseLine;
     },
 
+    // One submitted answer resolves the player action, enemy counter, and result state.
     submitAnswer(option) {
       if (
         this.status !== "in_progress" ||
@@ -216,6 +230,7 @@ export const useBattleStore = defineStore("battle", {
       const comboBonus = correct
         ? 1 + Math.min(Math.max(0, nextCombo - 1), 3) * 0.08
         : 1;
+      // Action can still downgrade to a basic attack if MP ran out between turns.
       let enemyIntent = getEnemyIntent(this.enemy, this.bossPhase, this.turn);
       let action = this.selectedAction;
       let playerDamage = 0;
@@ -285,6 +300,7 @@ export const useBattleStore = defineStore("battle", {
       this.comboStreak = nextCombo;
       this.maxCombo = Math.max(this.maxCombo, nextCombo);
 
+      // Boss phase 2 reduces incoming player damage so the fight feels more distinct.
       if (playerDamage > 0 && this.enemy.role === "Boss" && this.bossPhase === 2) {
         playerDamage = Math.max(3, Math.round(playerDamage * 0.82));
       }
@@ -348,6 +364,7 @@ export const useBattleStore = defineStore("battle", {
         return;
       }
 
+      // Guard modifies the next retaliation rather than the current attack itself.
       let enemyScale = 1 - this.pendingGuard;
       let enemyAttack = this.enemy.attack;
 
@@ -404,6 +421,7 @@ export const useBattleStore = defineStore("battle", {
       this.log = this.log.slice(0, 10);
     },
 
+    // Advance to the next turn only after the player has read the previous outcome.
     advanceTurn() {
       if (this.status !== "resolved") {
         return;

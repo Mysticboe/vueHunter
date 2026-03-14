@@ -1,3 +1,4 @@
+// Chapters define the world map order, unlock flow, and learning topics per region.
 export const chapters = [
   {
     id: 1,
@@ -64,6 +65,7 @@ export const chapters = [
   },
 ];
 
+// Small lookup helper used by map, battle, and practice flows.
 export function getChapterById(chapterId) {
   return chapters.find((chapter) => chapter.id === Number(chapterId)) ?? null;
 }

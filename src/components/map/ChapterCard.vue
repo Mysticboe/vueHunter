@@ -27,6 +27,7 @@
       Progress: {{ progress.cleared }} / {{ progress.total }}
     </div>
 
+    <!-- Encounter buttons are data-driven so chapters can grow without template rewrites. -->
     <div class="chapter-card__encounters">
       <button
         v-for="enemy in enemies"
@@ -46,6 +47,7 @@
 </template>
 
 <script setup>
+// The map passes precomputed chapter state so this card stays presentational.
 defineProps({
   chapter: {
     type: Object,
@@ -73,5 +75,6 @@ defineProps({
   },
 });
 
+// Clicking any encounter asks the parent view to route into that battle.
 defineEmits(["challenge"]);
 </script>

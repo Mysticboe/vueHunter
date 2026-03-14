@@ -1,3 +1,4 @@
+// Items cover both consumables and equipment so the inventory can stay data-driven.
 export const items = [
   {
     id: "patch-potion",
@@ -155,6 +156,7 @@ export const items = [
   },
 ];
 
+// Shared item lookup for rewards, inventory rendering, and equip validation.
 export function getItemById(itemId) {
   return items.find((item) => item.id === itemId) ?? null;
 }

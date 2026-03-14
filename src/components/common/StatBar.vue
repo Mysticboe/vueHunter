@@ -1,5 +1,6 @@
 <template>
   <div class="stat-bar">
+    <!-- Label row keeps the raw number visible even when the bar is nearly empty. -->
     <div class="stat-bar__label-row">
       <span>{{ label }}</span>
       <span>{{ value }} / {{ max }}</span>
@@ -17,6 +18,7 @@
 <script setup>
 import { computed } from "vue";
 
+// The stat bar is generic so battle, map, and inventory can all reuse it.
 const props = defineProps({
   label: {
     type: String,
@@ -36,6 +38,7 @@ const props = defineProps({
   },
 });
 
+// Clamp percentage math to avoid negative widths or values over 100%.
 const fillWidth = computed(() => {
   if (props.max <= 0) {
     return 0;
@@ -44,4 +47,3 @@ const fillWidth = computed(() => {
   return Math.max(0, Math.min(100, (props.value / props.max) * 100));
 });
 </script>
-

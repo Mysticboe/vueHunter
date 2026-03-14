@@ -1,3 +1,4 @@
+// Skills are passive upgrades unlocked from chapter progress and level thresholds.
 export const skills = [
   {
     id: "template-strike",
@@ -180,6 +181,7 @@ export const skills = [
   },
 ];
 
+// Shared skill lookup for the skill tree and stat recalculation.
 export function getSkillById(skillId) {
   return skills.find((skill) => skill.id === skillId) ?? null;
 }

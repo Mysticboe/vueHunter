@@ -1,36 +1,36 @@
 # Vue Hunter
 
-Vue Hunter is a Vue 3 + Vite + Pinia + Vue Router learning RPG. The current MVP ships a playable loop with:
+Vue Hunter 是一个基于 Vue 3、Vite、Pinia 和 Vue Router 构建的学习类 RPG 项目。当前 MVP 已经具备一套可游玩的核心循环，包含以下内容：
 
-- A home screen with new game, continue actions, and a live quest board
-- A world map with 7 chapters and chapter unlock flow
-- Turn-based quiz battles driven by single-choice, judge, and code-fill prompts
-- Boss encounters with phase shifts, intent hints, combo tracking, and rank feedback
-- EXP, gold, level-up rewards, skill points, and autosave through localStorage
-- Inventory, equipment, camp rest, a skill tree, a handbook, wrong-answer review, chapter drills, practice session ranks, milestones, and shared top navigation
+- 带有新游戏、继续游戏和实时任务看板的首页
+- 包含 7 个章节的世界地图，以及章节解锁流程
+- 由单选题、判断题和代码填空题驱动的回合制答题战斗
+- 带有阶段变化、行动意图提示、连击统计和评级反馈的 Boss 战
+- 经验值、金币、升级奖励、技能点，以及基于 localStorage 的自动存档
+- 背包、装备、营地休息、技能树、图鉴、错题回顾、章节训练、练习评级、里程碑和全局导航
 
-## Run locally
+## 本地运行
 
-Tested with Node.js `24.14.0` and npm `11.9.0`.
+当前项目已在 Node.js `24.14.0` 与 npm `11.9.0` 环境下验证通过。
 
-1. Install dependencies with `npm install`
-2. Start the dev server with `npm run dev`
-3. Build for production with `npm run build`
+1. 使用 `npm install` 安装依赖
+2. 使用 `npm run dev` 启动开发服务器
+3. 使用 `npm run build` 进行生产构建
 
-## Project structure
+## 项目结构
 
-- `src/views`: home, map, battle, practice, and utility screens
-- `src/stores`: persistent game state and temporary battle state
-- `src/data`: chapters, enemies, and question banks
-- `src/utils`: damage, level, and save helpers
-- `src/components`: reusable battle, map, and stat display UI
+- `src/views`：首页、地图、战斗、练习和其他功能页面
+- `src/stores`：持久化游戏状态与临时战斗状态
+- `src/data`：章节、敌人和题库数据
+- `src/utils`：伤害、等级和存档等工具函数
+- `src/components`：可复用的战斗、地图和状态展示组件
 
-## MVP scope covered
+## 当前 MVP 覆盖范围
 
-- Home page
-- Map page
-- Battle page
-- Player stats and monster encounters
-- Single-choice battle flow
-- Rewards and chapter unlocks
-- localStorage persistence
+- 首页
+- 地图页
+- 战斗页
+- 玩家属性与怪物遭遇
+- 单选题战斗流程
+- 奖励与章节解锁
+- localStorage 持久化存档

@@ -10,6 +10,7 @@
       <span class="global-nav__subtitle">Front-end Trial Ledger</span>
     </div>
 
+    <!-- The nav stays route-driven so adding a new top-level screen is one data change. -->
     <nav class="global-nav__links">
       <RouterLink
         v-for="link in links"
@@ -44,9 +45,11 @@ import { RouterLink, useRoute } from "vue-router";
 
 import { useGameStore } from "../../stores/game";
 
+// Read route and player data once so the shell can stay reactive without prop-drilling.
 const route = useRoute();
 const gameStore = useGameStore();
 
+// Top-level screens are intentionally flat and always available from the shell.
 const links = [
   { label: "Home", to: "/" },
   { label: "Map", to: "/map" },

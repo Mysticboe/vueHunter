@@ -1,5 +1,6 @@
 const STORAGE_KEY = "vue-hunter-save-v1";
 
+// Load the latest local save when the app boots in the browser.
 export function loadGame() {
   if (typeof window === "undefined") {
     return null;
@@ -19,6 +20,7 @@ export function loadGame() {
   }
 }
 
+// Persist the full store snapshot because the game is entirely client-side.
 export function saveGame(state) {
   if (typeof window === "undefined") {
     return;
@@ -27,6 +29,7 @@ export function saveGame(state) {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
+// Remove the save when the player chooses to fully reset the run.
 export function clearGameSave() {
   if (typeof window === "undefined") {
     return;
@@ -34,4 +37,3 @@ export function clearGameSave() {
 
   window.localStorage.removeItem(STORAGE_KEY);
 }
-

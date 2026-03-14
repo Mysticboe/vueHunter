@@ -1,3 +1,4 @@
+// Enemies map chapters to concrete encounters, rewards, and question pools.
 export const enemies = [
   {
     id: 101,
@@ -183,6 +184,7 @@ export const enemies = [
   },
 ];
 
+// Enemy lookups keep route params and battle state easy to resolve.
 export function getEnemyById(enemyId) {
   return enemies.find((enemy) => enemy.id === Number(enemyId)) ?? null;
 }
