@@ -57,5 +57,6 @@ const links = [
   { label: "技能树", to: "/skills" },
   { label: "图鉴", to: "/handbook" },
   { label: "练习", to: "/practice" },
+  { label: "设置", to: "/settings" },
 ];
 </script>

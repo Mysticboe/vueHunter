@@ -24,6 +24,13 @@
         >
           继续游戏
         </button>
+        <button
+          type="button"
+          class="button button--ghost"
+          @click="router.push('/settings')"
+        >
+          设置
+        </button>
       </div>
 
       <!-- 首页数据卡帮助玩家快速了解当前版本内容范围。 -->

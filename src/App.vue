@@ -1,5 +1,8 @@
 <template>
-  <div class="app-shell">
+  <div
+    class="app-shell"
+    :class="{ 'app-shell--reduced-motion': gameStore.preferences.reducedMotion }"
+  >
     <!-- 全局导航保持常驻，页面主体只切换当前路由视图。 -->
     <GlobalNav />
     <RouterView />
@@ -10,6 +13,8 @@
 import { RouterView } from "vue-router";
 
 import GlobalNav from "./components/common/GlobalNav.vue";
+import { useGameStore } from "./stores/game";
 
 // 这里是应用总外壳，只负责拼装常驻导航和当前路由页面。
+const gameStore = useGameStore();
 </script>

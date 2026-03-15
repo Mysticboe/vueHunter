@@ -11,6 +11,12 @@
         >
           题型：{{ questionTypeLabel }}
         </span>
+        <span
+          v-if="comboStreak > 0"
+          class="chip"
+        >
+          连击：x{{ comboStreak }}
+        </span>
       </div>
     </div>
 
@@ -28,6 +34,49 @@
         <span>{{ action.label }}</span>
         <small>{{ action.description }}</small>
       </button>
+    </div>
+
+    <!-- 战术预警把敌方下一次反击的技能、威胁和承伤预估提前告诉玩家。 -->
+    <div
+      v-if="enemyPreview"
+      class="question-forecast"
+    >
+      <article
+        class="forecast-card"
+        :class="`forecast-card--${enemyPreview.threatTone}`"
+      >
+        <span class="forecast-card__label">敌方技能</span>
+        <strong>{{ enemyPreview.skillName }}</strong>
+        <small>{{ enemyPreview.intent }}</small>
+      </article>
+      <article
+        class="forecast-card"
+        :class="`forecast-card--${enemyPreview.threatTone}`"
+      >
+        <span class="forecast-card__label">威胁等级</span>
+        <strong>{{ enemyPreview.threatLabel }}</strong>
+        <small>{{ threatDescription }}</small>
+      </article>
+      <article class="forecast-card">
+        <span class="forecast-card__label">预计承伤</span>
+        <strong>{{ forecastDamageLabel }}</strong>
+        <small>{{ actionForecastHint }}</small>
+      </article>
+    </div>
+
+    <!-- 首领附加效果会在下一回合生效，这里直接提醒玩家当前限制。 -->
+    <div
+      v-if="activeEffects.length > 0"
+      class="question-panel__chips"
+    >
+      <span
+        v-for="effect in activeEffects"
+        :key="effect.id"
+        class="chip"
+        :class="`chip--${effect.tone}`"
+      >
+        {{ effect.label }}：{{ effect.detail }}
+      </span>
     </div>
 
     <!-- 题目主体同时支持普通选项题和代码片段题。 -->
@@ -65,6 +114,27 @@
     >
       <div class="result-card__title">
         {{ lastOutcome.correct ? "回答正确" : "回答错误" }}
+      </div>
+      <div class="question-panel__chips result-card__chips">
+        <span
+          v-if="lastOutcome.comboStreak > 0"
+          class="chip"
+        >
+          当前连击：x{{ lastOutcome.comboStreak }}
+        </span>
+        <span
+          v-if="lastOutcome.enemySkillName"
+          class="chip"
+        >
+          敌方技能：{{ lastOutcome.enemySkillName }}
+        </span>
+        <span
+          v-if="lastOutcome.enemyThreatLabel"
+          class="chip"
+          :class="`chip--${lastOutcome.enemyThreatTone ?? 'mid'}`"
+        >
+          威胁：{{ lastOutcome.enemyThreatLabel }}
+        </span>
       </div>
       <p>{{ lastOutcome.effectLine }}</p>
       <p>
@@ -111,6 +181,18 @@ const props = defineProps({
   turn: {
     type: Number,
     default: 1,
+  },
+  comboStreak: {
+    type: Number,
+    default: 0,
+  },
+  enemyPreview: {
+    type: Object,
+    default: null,
+  },
+  activeEffects: {
+    type: Array,
+    default: () => [],
   },
   lastOutcome: {
     type: Object,
@@ -168,4 +250,57 @@ const questionTypeLabel = computed(() => {
 
 // 各种题型都统一从这里读取可选答案列表。
 const answerOptions = computed(() => props.question?.options ?? []);
+
+// 威胁描述会随着敌方技能强度变化，帮助玩家更快判断风险。
+const threatDescription = computed(() => {
+  if (!props.enemyPreview) {
+    return "本回合暂无敌方预警。";
+  }
+
+  if (props.enemyPreview.threatTone === "critical") {
+    return "这一击非常危险，尽量不要硬吃。";
+  }
+
+  if (props.enemyPreview.threatTone === "high") {
+    return "这轮反击很重，谨慎选择全力输出。";
+  }
+
+  if (props.enemyPreview.threatTone === "mid") {
+    return "威胁中等，答题稳定比硬拼更重要。";
+  }
+
+  return "这次反击压力较低，可以更主动地争取输出。";
+});
+
+// 预计承伤会根据当前行动即时变化，方便比较输出与防御收益。
+const forecastDamageLabel = computed(() => {
+  if (!props.enemyPreview) {
+    return "暂无";
+  }
+
+  if (props.selectedAction === "guard") {
+    return `答对约 ${props.enemyPreview.guardedDamage} / 答错约 ${props.enemyPreview.failedGuardDamage}`;
+  }
+
+  return `约 ${props.enemyPreview.rawDamage}`;
+});
+
+// 不同行动的提示文案不同，尽量把策略差异说清楚。
+const actionForecastHint = computed(() => {
+  if (!props.enemyPreview) {
+    return "等待下一次遭遇。";
+  }
+
+  if (props.selectedAction === "guard") {
+    return props.question?.type === "judge"
+      ? "这道判断题适合稳扎稳打，防御收益会更高。"
+      : "如果答对，调试防御能明显压低本次反击。";
+  }
+
+  if (props.selectedAction === "skill") {
+    return "你会打出更高伤害，但也要准备承受完整反击。";
+  }
+
+  return "这是最稳的输出选项，若想保命可以改成调试防御。";
+});
 </script>

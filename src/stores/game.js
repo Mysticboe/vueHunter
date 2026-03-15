@@ -9,6 +9,18 @@ import { clearGameSave, loadGame, saveGame } from "../utils/save";
 
 const CAMP_REST_COST = 14;
 
+// 偏好项单独抽成工厂函数，方便新开局时保留玩家设置。
+function createDefaultPreferences() {
+  return {
+    playerName: "前端勇者",
+    showBattleEffects: true,
+    showBattleAnnouncer: true,
+    showBattleForecast: true,
+    showBattleLog: true,
+    reducedMotion: false,
+  };
+}
+
 // 小型属性工具函数用于把等级、装备和技能加成统一组合。
 function createStatBlock() {
   return {
@@ -124,8 +136,27 @@ function collectSkillBonus(player) {
   }, createStatBlock());
 }
 
+// 偏好项兼容旧存档时，需要逐个回落到安全默认值。
+function normalizePreferences(preferences = {}, fallbackName = "前端勇者") {
+  const defaults = createDefaultPreferences();
+
+  return {
+    ...defaults,
+    ...preferences,
+    playerName:
+      typeof preferences.playerName === "string" && preferences.playerName.trim().length > 0
+        ? preferences.playerName.trim().slice(0, 16)
+        : fallbackName,
+    showBattleEffects: preferences.showBattleEffects ?? defaults.showBattleEffects,
+    showBattleAnnouncer: preferences.showBattleAnnouncer ?? defaults.showBattleAnnouncer,
+    showBattleForecast: preferences.showBattleForecast ?? defaults.showBattleForecast,
+    showBattleLog: preferences.showBattleLog ?? defaults.showBattleLog,
+    reducedMotion: preferences.reducedMotion ?? defaults.reducedMotion,
+  };
+}
+
 // 创建默认玩家，并让初始装备在开局就处于穿戴状态。
-function createFreshPlayer() {
+function createFreshPlayer(preferences = createDefaultPreferences()) {
   const baseStats = getStatsForLevel(1);
   const inventory = normalizeInventory([
     { itemId: "patch-potion", quantity: 2 },
@@ -147,7 +178,7 @@ function createFreshPlayer() {
   );
 
   return {
-    name: "前端勇者",
+    name: preferences.playerName,
     level: 1,
     exp: 0,
     hp: finalStats.maxHp,
@@ -167,12 +198,13 @@ function createFreshPlayer() {
 }
 
 // 根状态同时保存当前进度和长期成就数据。
-function createFreshState() {
+function createFreshState(preferences = createDefaultPreferences()) {
   return {
-    version: 4,
+    version: 5,
     started: false,
     lastPlayedAt: null,
-    player: createFreshPlayer(),
+    preferences,
+    player: createFreshPlayer(preferences),
     clearedEnemies: [],
     encounteredEnemies: [],
     achievements: {
@@ -189,6 +221,12 @@ function mergeSavedState(savedState) {
   const freshState = createFreshState();
   const savedPlayer = savedState?.player ?? {};
   const freshPlayer = freshState.player;
+  const preferences = normalizePreferences(
+    savedState?.preferences,
+    typeof savedPlayer.name === "string" && savedPlayer.name.trim().length > 0
+      ? savedPlayer.name.trim()
+      : freshState.preferences.playerName,
+  );
   const inventory = normalizeInventory(savedPlayer.inventory);
   const hasSavedInventory = Array.isArray(savedPlayer.inventory);
   const normalizedEquippedItems = normalizeEquippedItems(savedPlayer.equippedItems);
@@ -199,9 +237,14 @@ function mergeSavedState(savedState) {
   return {
     ...freshState,
     ...savedState,
+    preferences,
     player: {
       ...freshPlayer,
       ...savedPlayer,
+      name:
+        typeof savedPlayer.name === "string" && savedPlayer.name.trim().length > 0
+          ? savedPlayer.name.trim().slice(0, 16)
+          : preferences.playerName,
       skillPoints:
         Number(savedPlayer.skillPoints) >= 0
           ? Number(savedPlayer.skillPoints)
@@ -232,6 +275,11 @@ function mergeSavedState(savedState) {
         : freshState.achievements.flawlessEnemyIds,
     },
   };
+}
+
+// 导出前转成纯 JSON 快照，确保不会把响应式包装带进文件。
+function createSerializableState(state) {
+  return JSON.parse(JSON.stringify(state));
 }
 
 export const useGameStore = defineStore("game", {
@@ -477,7 +525,8 @@ export const useGameStore = defineStore("game", {
 
     // 开始新游戏时重置整局进度，但保留当前版本规则。
     startNewGame() {
-      this.$patch(createFreshState());
+      const preservedPreferences = { ...this.preferences };
+      this.$patch(createFreshState(preservedPreferences));
       this.started = true;
       this.lastPlayedAt = Date.now();
       this.recalculatePlayer(true);
@@ -485,8 +534,50 @@ export const useGameStore = defineStore("game", {
 
     // 彻底重置整局进度，用于地图页的重开操作。
     resetGame() {
-      this.$patch(createFreshState());
+      const preservedPreferences = { ...this.preferences };
+      this.$patch(createFreshState(preservedPreferences));
       clearGameSave();
+    },
+
+    // 从外部文件导入进度时，沿用与本地存档相同的兼容和修复逻辑。
+    importSaveData(snapshot) {
+      if (!snapshot || typeof snapshot !== "object" || Array.isArray(snapshot)) {
+        return false;
+      }
+
+      this.$patch(mergeSavedState(snapshot));
+      this.lastPlayedAt = Date.now();
+      this.recalculatePlayer(false);
+      return true;
+    },
+
+    // 设置页导出时直接读取当前整份状态快照。
+    exportSaveData() {
+      return createSerializableState(this.$state);
+    },
+
+    // 偏好设置按键更新时，会直接走这里并自动写入本地存储。
+    setPreference(key, value) {
+      if (!(key in createDefaultPreferences()) || key === "playerName") {
+        return false;
+      }
+
+      this.preferences[key] = Boolean(value);
+      this.lastPlayedAt = Date.now();
+      return true;
+    },
+
+    // 勇者名号会同时写入玩家面板和偏好项，确保新开局也能继承。
+    setPlayerName(name) {
+      const nextName =
+        typeof name === "string" && name.trim().length > 0
+          ? name.trim().slice(0, 16)
+          : createDefaultPreferences().playerName;
+
+      this.preferences.playerName = nextName;
+      this.player.name = nextName;
+      this.lastPlayedAt = Date.now();
+      return nextName;
     },
 
     // 经验、装备或技能变化时，都要重建玩家属性面板。
