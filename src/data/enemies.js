@@ -1,10 +1,10 @@
-// Enemies map chapters to concrete encounters, rewards, and question pools.
+// 敌人数据把章节映射到具体遭遇、奖励和题目池。
 export const enemies = [
   {
     id: 101,
     chapterId: 1,
-    name: "Interpolation Slime",
-    role: "Scout",
+    name: "插值史莱姆",
+    role: "小怪",
     maxHp: 52,
     attack: 8,
     defense: 2,
@@ -16,7 +16,7 @@ export const enemies = [
   {
     id: 102,
     chapterId: 1,
-    name: "Directive Warlock",
+    name: "指令魔导师",
     role: "Boss",
     maxHp: 82,
     attack: 11,
@@ -29,8 +29,8 @@ export const enemies = [
   {
     id: 201,
     chapterId: 2,
-    name: "Value Sneak",
-    role: "Scout",
+    name: "Value 偷偷怪",
+    role: "小怪",
     maxHp: 64,
     attack: 12,
     defense: 3,
@@ -42,7 +42,7 @@ export const enemies = [
   {
     id: 202,
     chapterId: 2,
-    name: "Reactive Colossus",
+    name: "Reactive 巨像",
     role: "Boss",
     maxHp: 96,
     attack: 15,
@@ -55,8 +55,8 @@ export const enemies = [
   {
     id: 301,
     chapterId: 3,
-    name: "Eye of Derivation",
-    role: "Scout",
+    name: "推导之眼",
+    role: "小怪",
     maxHp: 74,
     attack: 14,
     defense: 4,
@@ -68,7 +68,7 @@ export const enemies = [
   {
     id: 302,
     chapterId: 3,
-    name: "Side Effect Sage",
+    name: "副作用术士",
     role: "Boss",
     maxHp: 108,
     attack: 17,
@@ -81,8 +81,8 @@ export const enemies = [
   {
     id: 401,
     chapterId: 4,
-    name: "Broken Link Squire",
-    role: "Scout",
+    name: "父子断链怪",
+    role: "小怪",
     maxHp: 92,
     attack: 18,
     defense: 6,
@@ -94,7 +94,7 @@ export const enemies = [
   {
     id: 402,
     chapterId: 4,
-    name: "Signal Tyrant",
+    name: "通信暴君",
     role: "Boss",
     maxHp: 132,
     attack: 22,
@@ -107,8 +107,8 @@ export const enemies = [
   {
     id: 501,
     chapterId: 5,
-    name: "Composable Wisp",
-    role: "Scout",
+    name: "组合幽光体",
+    role: "小怪",
     maxHp: 104,
     attack: 21,
     defense: 7,
@@ -120,7 +120,7 @@ export const enemies = [
   {
     id: 502,
     chapterId: 5,
-    name: "Mirror Architect",
+    name: "重复代码分身魔",
     role: "Boss",
     maxHp: 148,
     attack: 25,
@@ -133,8 +133,8 @@ export const enemies = [
   {
     id: 601,
     chapterId: 6,
-    name: "Path Weaver",
-    role: "Scout",
+    name: "路径织行者",
+    role: "小怪",
     maxHp: 118,
     attack: 24,
     defense: 9,
@@ -146,7 +146,7 @@ export const enemies = [
   {
     id: 602,
     chapterId: 6,
-    name: "Gatekeeper Null",
+    name: "迷路守门人",
     role: "Boss",
     maxHp: 164,
     attack: 29,
@@ -159,8 +159,8 @@ export const enemies = [
   {
     id: 701,
     chapterId: 7,
-    name: "Store Shade",
-    role: "Scout",
+    name: "Store 幽影",
+    role: "小怪",
     maxHp: 128,
     attack: 27,
     defense: 10,
@@ -172,7 +172,7 @@ export const enemies = [
   {
     id: 702,
     chapterId: 7,
-    name: "State Disorder King",
+    name: "状态混乱魔王",
     role: "Boss",
     maxHp: 182,
     attack: 33,
@@ -184,7 +184,7 @@ export const enemies = [
   },
 ];
 
-// Enemy lookups keep route params and battle state easy to resolve.
+// 路由参数和战斗初始化都通过这个方法查找敌人。
 export function getEnemyById(enemyId) {
   return enemies.find((enemy) => enemy.id === Number(enemyId)) ?? null;
 }

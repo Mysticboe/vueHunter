@@ -1,7 +1,7 @@
-// Exp thresholds use array position + 1 to map directly to display levels.
+// 经验阈值用数组下标加一，直接对应界面展示的等级。
 export const LEVEL_THRESHOLDS = [0, 60, 150, 280, 460, 700, 1000];
 
-// Walk downward so the first matching threshold is the highest unlocked level.
+// 从后往前找，第一个命中的阈值就是当前已解锁的最高等级。
 export function getLevelFromExp(exp) {
   for (let index = LEVEL_THRESHOLDS.length - 1; index >= 0; index -= 1) {
     if (exp >= LEVEL_THRESHOLDS[index]) {
@@ -12,12 +12,12 @@ export function getLevelFromExp(exp) {
   return 1;
 }
 
-// The next threshold is looked up from the current level index.
+// 下一等级阈值直接按当前等级索引读取。
 export function getNextLevelExp(level) {
   return LEVEL_THRESHOLDS[level] ?? null;
 }
 
-// Level growth is linear in the MVP so combat balance stays easy to tune.
+// MVP 里属性成长保持线性，方便后续继续微调战斗数值。
 export function getStatsForLevel(level) {
   const growth = Math.max(0, level - 1);
 

@@ -1,49 +1,49 @@
-// Skills are passive upgrades unlocked from chapter progress and level thresholds.
+// 技能是根据章节进度和等级阈值解锁的被动成长项。
 export const skills = [
   {
     id: "template-strike",
-    name: "Template Strike",
+    name: "模板一击",
     chapterId: 1,
     unlockLevel: 1,
     cost: 1,
     prerequisites: [],
-    description: "Attack +2 from tighter template fundamentals.",
+    description: "模板基础更加扎实，攻击 +2。",
     stats: {
       attack: 2,
     },
   },
   {
     id: "directive-focus",
-    name: "Directive Focus",
+    name: "指令专注",
     chapterId: 1,
     unlockLevel: 2,
     cost: 1,
     prerequisites: ["template-strike"],
-    description: "Max MP +6 for steadier skill casts.",
+    description: "技能释放更稳定，最大 MP +6。",
     stats: {
       maxMp: 6,
     },
   },
   {
     id: "reactive-core",
-    name: "Reactive Core",
+    name: "响应核心",
     chapterId: 2,
     unlockLevel: 2,
     cost: 1,
     prerequisites: ["template-strike"],
-    description: "Max HP +12 from stronger state management.",
+    description: "状态管理更稳，最大 HP +12。",
     stats: {
       maxHp: 12,
     },
   },
   {
     id: "value-link",
-    name: "Value Link",
+    name: "值连接",
     chapterId: 2,
     unlockLevel: 3,
     cost: 1,
     prerequisites: ["directive-focus", "reactive-core"],
-    description: "Attack +2 and Defense +1 from cleaner ref handling.",
+    description: "ref 使用更顺手，攻击 +2、防御 +1。",
     stats: {
       attack: 2,
       defense: 1,
@@ -51,24 +51,24 @@ export const skills = [
   },
   {
     id: "computed-edge",
-    name: "Computed Edge",
+    name: "推导之刃",
     chapterId: 3,
     unlockLevel: 3,
     cost: 1,
     prerequisites: ["reactive-core"],
-    description: "Attack +3 from sharper derived-state decisions.",
+    description: "推导判断更锋利，攻击 +3。",
     stats: {
       attack: 3,
     },
   },
   {
     id: "watch-aegis",
-    name: "Watch Aegis",
+    name: "监听壁垒",
     chapterId: 3,
     unlockLevel: 4,
     cost: 1,
     prerequisites: ["value-link", "computed-edge"],
-    description: "Defense +2 and Max MP +8 from better side-effect control.",
+    description: "副作用控制更稳，防御 +2、最大 MP +8。",
     stats: {
       defense: 2,
       maxMp: 8,
@@ -76,12 +76,12 @@ export const skills = [
   },
   {
     id: "prop-chain",
-    name: "Prop Chain",
+    name: "属性链路",
     chapterId: 4,
     unlockLevel: 4,
     cost: 1,
     prerequisites: ["computed-edge"],
-    description: "Defense +2 and Attack +1 from cleaner parent-child contracts.",
+    description: "父子契约更清晰，防御 +2、攻击 +1。",
     stats: {
       attack: 1,
       defense: 2,
@@ -89,12 +89,12 @@ export const skills = [
   },
   {
     id: "emit-resonance",
-    name: "Emit Resonance",
+    name: "事件共鸣",
     chapterId: 4,
     unlockLevel: 5,
     cost: 1,
     prerequisites: ["prop-chain", "watch-aegis"],
-    description: "Attack +2 and Max MP +6 when event flow finally clicks.",
+    description: "事件传递终于顺了，攻击 +2、最大 MP +6。",
     stats: {
       attack: 2,
       maxMp: 6,
@@ -102,12 +102,12 @@ export const skills = [
   },
   {
     id: "setup-discipline",
-    name: "Setup Discipline",
+    name: "Setup 纪律",
     chapterId: 5,
     unlockLevel: 5,
     cost: 1,
     prerequisites: ["prop-chain"],
-    description: "Max HP +10 and Max MP +6 from cleaner setup structure.",
+    description: "setup 结构更整洁，最大 HP +10、最大 MP +6。",
     stats: {
       maxHp: 10,
       maxMp: 6,
@@ -115,12 +115,12 @@ export const skills = [
   },
   {
     id: "composable-engine",
-    name: "Composable Engine",
+    name: "组合引擎",
     chapterId: 5,
     unlockLevel: 6,
     cost: 1,
     prerequisites: ["setup-discipline", "emit-resonance"],
-    description: "Attack +3 and Defense +2 from reusable, battle-tested logic.",
+    description: "逻辑复用更成熟，攻击 +3、防御 +2。",
     stats: {
       attack: 3,
       defense: 2,
@@ -128,12 +128,12 @@ export const skills = [
   },
   {
     id: "pathfinding",
-    name: "Pathfinding",
+    name: "路径感知",
     chapterId: 6,
     unlockLevel: 6,
     cost: 1,
     prerequisites: ["setup-discipline"],
-    description: "Attack +2 and Max MP +6 from cleaner navigation flow.",
+    description: "导航流更清晰，攻击 +2、最大 MP +6。",
     stats: {
       attack: 2,
       maxMp: 6,
@@ -141,12 +141,12 @@ export const skills = [
   },
   {
     id: "guarded-transit",
-    name: "Guarded Transit",
+    name: "守卫迁跃",
     chapterId: 6,
     unlockLevel: 7,
     cost: 1,
     prerequisites: ["pathfinding", "composable-engine"],
-    description: "Defense +3 and Max HP +14 when guards and routes finally align.",
+    description: "守卫与路由终于对齐，防御 +3、最大 HP +14。",
     stats: {
       defense: 3,
       maxHp: 14,
@@ -154,12 +154,12 @@ export const skills = [
   },
   {
     id: "store-architecture",
-    name: "Store Architecture",
+    name: "Store 架构",
     chapterId: 7,
     unlockLevel: 7,
     cost: 1,
     prerequisites: ["pathfinding"],
-    description: "Max HP +12 and Defense +2 from disciplined store design.",
+    description: "store 设计更规范，最大 HP +12、防御 +2。",
     stats: {
       maxHp: 12,
       defense: 2,
@@ -167,12 +167,12 @@ export const skills = [
   },
   {
     id: "global-domain",
-    name: "Global Domain",
+    name: "全局领域",
     chapterId: 7,
     unlockLevel: 8,
     cost: 1,
     prerequisites: ["store-architecture", "guarded-transit"],
-    description: "Attack +3, Defense +2, and Max MP +8 from mastering shared global state.",
+    description: "掌握全局共享状态后，攻击 +3、防御 +2、最大 MP +8。",
     stats: {
       attack: 3,
       defense: 2,
@@ -181,7 +181,7 @@ export const skills = [
   },
 ];
 
-// Shared skill lookup for the skill tree and stat recalculation.
+// 技能树和属性重算都会通过这里查技能详情。
 export function getSkillById(skillId) {
   return skills.find((skill) => skill.id === skillId) ?? null;
 }

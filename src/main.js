@@ -6,18 +6,18 @@ import router from "./router";
 import { useGameStore } from "./stores/game";
 import "./styles.css";
 
-// Create the root Vue app instance for the single-page game shell.
+// 创建单页游戏应用的根实例。
 const app = createApp(App);
-// Pinia holds both the long-lived run state and short-lived battle state.
+// Pinia 同时管理长期进度和短期战斗状态。
 const pinia = createPinia();
 
 app.use(pinia);
 
-// Restore any saved run before mounting so the first paint matches the save file.
+// 挂载前先恢复存档，保证首屏就和存档状态一致。
 const gameStore = useGameStore(pinia);
 gameStore.hydrateFromSave();
 gameStore.enableAutoSave();
 
-// Register routing after stores so route views can read hydrated state immediately.
+// 在状态初始化之后再注册路由，避免页面先读到空状态。
 app.use(router);
 app.mount("#app");

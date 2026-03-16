@@ -6,9 +6,10 @@ import HomeView from "../views/HomeView.vue";
 import InventoryView from "../views/InventoryView.vue";
 import MapView from "../views/MapView.vue";
 import PracticeView from "../views/PracticeView.vue";
+import SettingsView from "../views/SettingsView.vue";
 import SkillTreeView from "../views/SkillTreeView.vue";
 
-// Keep the route table flat so major game screens are easy to reach and extend.
+// 路由保持扁平，方便后续继续扩展新的主页面。
 const router = createRouter({
   history: createWebHistory(),
   routes: [
@@ -41,6 +42,11 @@ const router = createRouter({
       path: "/practice",
       name: "practice",
       component: PracticeView,
+    },
+    {
+      path: "/settings",
+      name: "settings",
+      component: SettingsView,
     },
     {
       path: "/battle/:enemyId",

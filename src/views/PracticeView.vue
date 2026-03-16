@@ -2,7 +2,7 @@
   <main class="page-shell utility-view">
     <header class="panel utility-header">
       <div>
-        <div class="panel__eyebrow">Practice Hall</div>
+        <div class="panel__eyebrow">练习大厅</div>
         <h1 class="panel__title">{{ pageTitle }}</h1>
       </div>
       <div class="page-links">
@@ -11,46 +11,46 @@
           class="button button--ghost"
           @click="router.push('/handbook')"
         >
-          Handbook
+          图鉴
         </button>
         <button
           type="button"
           class="button button--ghost"
           @click="router.push('/map')"
         >
-          Map
+          地图
         </button>
       </div>
     </header>
 
     <section class="utility-grid">
-      <!-- The left column controls mode, target chapter, and live session metrics. -->
+      <!-- 左侧控制练习模式、章节目标和实时统计。 -->
       <section class="panel">
-        <div class="panel__eyebrow">Session</div>
+        <div class="panel__eyebrow">练习信息</div>
         <h2 class="panel__title">{{ sessionTitle }}</h2>
         <div class="summary-grid practice-summary">
           <div>
-            <span>Mode</span>
+            <span>模式</span>
             <strong>{{ practiceModeLabel }}</strong>
           </div>
           <div>
-            <span>Target</span>
+            <span>目标</span>
             <strong>{{ targetLabel }}</strong>
           </div>
           <div>
-            <span>Accuracy</span>
+            <span>正确率</span>
             <strong>{{ accuracyLabel }}</strong>
           </div>
           <div>
-            <span>Resolved</span>
+            <span>已清除</span>
             <strong>{{ sessionStats.resolvedBacklog }}</strong>
           </div>
           <div>
-            <span>Missed</span>
+            <span>错误</span>
             <strong>{{ sessionStats.missed }}</strong>
           </div>
           <div>
-            <span>Best streak</span>
+            <span>最高连击</span>
             <strong>x{{ sessionStats.bestStreak }}</strong>
           </div>
         </div>
@@ -62,7 +62,7 @@
             :class="practiceMode === 'review' ? 'button--primary' : 'button--ghost'"
             @click="setMode('review')"
           >
-            Wrong-answer review
+            错题复盘
           </button>
           <button
             type="button"
@@ -70,7 +70,7 @@
             :class="practiceMode === 'drill' ? 'button--primary' : 'button--ghost'"
             @click="setMode('drill')"
           >
-            Chapter drill
+            章节训练
           </button>
         </div>
 
@@ -93,15 +93,15 @@
         </p>
       </section>
 
-      <!-- The right column swaps between the active prompt, report, or empty state. -->
+      <!-- 右侧区域会在当前题目、结算报告和空状态之间切换。 -->
       <section class="panel panel--wide practice-panel">
         <template v-if="currentQuestion">
-          <div class="panel__eyebrow">Current Prompt</div>
+          <div class="panel__eyebrow">当前题目</div>
           <div class="question-panel__header">
             <h2 class="panel__title">{{ promptTitle }}</h2>
             <div class="question-panel__chips">
-              <span class="chip">Type: {{ questionTypeLabel(currentQuestion.type) }}</span>
-              <span class="chip">Chapter {{ currentQuestion.chapterId }}</span>
+              <span class="chip">题型：{{ questionTypeLabel(currentQuestion.type) }}</span>
+              <span class="chip">第 {{ currentQuestion.chapterId }} 章</span>
               <span class="chip">{{ remainingLabel }}</span>
             </div>
           </div>
@@ -135,12 +135,12 @@
             }"
           >
             <div class="result-card__title">
-              {{ outcome.correct ? "Prompt stabilized" : "Prompt still unstable" }}
+              {{ outcome.correct ? "题目已掌握" : "题目仍需复习" }}
             </div>
             <p>{{ outcome.effectLine }}</p>
             <p>
-              Chosen answer: {{ outcome.choice }} |
-              Correct answer: {{ outcome.answer }}
+              你的答案：{{ outcome.choice }} |
+              正确答案：{{ outcome.answer }}
             </p>
             <p class="result-card__explanation">{{ outcome.explanation }}</p>
           </div>
@@ -158,51 +158,51 @@
               class="button button--ghost"
               @click="resetSession"
             >
-              Restart session
+              重新开始本轮
             </button>
           </div>
         </template>
 
-        <!-- Finished sessions show a compact report before the player restarts. -->
+        <!-- 完成本轮后先展示一个简洁的结算报告。 -->
         <section
           v-else-if="sessionFinished"
           class="practice-report"
         >
-          <div class="panel__eyebrow">Session Report</div>
+          <div class="panel__eyebrow">练习报告</div>
           <div class="practice-report__header">
             <div>
               <h2 class="panel__title">{{ reportTitle }}</h2>
               <p class="muted-copy">{{ reportMessage }}</p>
             </div>
             <div class="practice-rank">
-              <span class="practice-rank__label">Rank</span>
+              <span class="practice-rank__label">评级</span>
               <strong>{{ sessionRank }}</strong>
             </div>
           </div>
 
           <div class="summary-grid practice-summary">
             <div>
-              <span>Answered</span>
+              <span>作答</span>
               <strong>{{ sessionStats.asked }}</strong>
             </div>
             <div>
-              <span>Correct</span>
+              <span>正确</span>
               <strong>{{ sessionStats.correct }}</strong>
             </div>
             <div>
-              <span>Missed</span>
+              <span>错误</span>
               <strong>{{ sessionStats.missed }}</strong>
             </div>
             <div>
-              <span>Accuracy</span>
+              <span>正确率</span>
               <strong>{{ accuracyLabel }}</strong>
             </div>
             <div>
-              <span>Resolved backlog</span>
+              <span>清除错题</span>
               <strong>{{ sessionStats.resolvedBacklog }}</strong>
             </div>
             <div>
-              <span>Best streak</span>
+              <span>最高连击</span>
               <strong>x{{ sessionStats.bestStreak }}</strong>
             </div>
           </div>
@@ -213,24 +213,24 @@
               class="button button--primary"
               @click="resetSession"
             >
-              Run it again
+              再来一轮
             </button>
             <button
               type="button"
               class="button button--ghost"
               @click="router.push('/handbook')"
             >
-              Back to handbook
+              返回图鉴
             </button>
           </div>
         </section>
 
-        <!-- Empty state covers both no-backlog review mode and unavailable drill state. -->
+        <!-- 空状态同时覆盖无错题复盘和无法开始训练两种情况。 -->
         <section
           v-else
           class="empty-panel practice-empty"
         >
-          <div class="panel__eyebrow">Queue Clear</div>
+          <div class="panel__eyebrow">队列已清空</div>
           <h2 class="panel__title">{{ emptyTitle }}</h2>
           <p class="muted-copy">{{ emptyMessage }}</p>
           <div class="page-links">
@@ -239,14 +239,14 @@
               class="button button--primary"
               @click="router.push('/handbook')"
             >
-              Return to handbook
+              返回图鉴
             </button>
             <button
               type="button"
               class="button button--ghost"
               @click="router.push('/map')"
             >
-              Return to map
+              返回地图
             </button>
           </div>
         </section>
@@ -265,7 +265,7 @@ import { useGameStore } from "../stores/game";
 
 const DRILL_SESSION_SIZE = 5;
 
-// Session metrics feed the live summary and the end-of-run report card.
+// 练习统计同时驱动实时摘要和结算报告。
 function createSessionStats() {
   return {
     asked: 0,
@@ -278,7 +278,7 @@ function createSessionStats() {
   };
 }
 
-// Shuffle drill prompts so chapter training feels less predictable between runs.
+// 打乱章节训练题目，避免每次都完全同顺序。
 function shuffleEntries(entries) {
   const nextEntries = [...entries];
 
@@ -292,7 +292,7 @@ function shuffleEntries(entries) {
   return nextEntries;
 }
 
-// Practice ranking is intentionally simple so players can read their result quickly.
+// 练习评级故意做得简单，方便玩家快速理解结果。
 function buildPracticeRank(accuracy, bestStreak, missedAnswers) {
   if (accuracy === 100 && bestStreak >= 4) {
     return "S";
@@ -309,7 +309,7 @@ function buildPracticeRank(accuracy, bestStreak, missedAnswers) {
   return "C";
 }
 
-// Practice view supports both wrong-answer cleanup and proactive chapter drills.
+// 练习页同时支持错题复盘和主动章节训练。
 const router = useRouter();
 const route = useRoute();
 const gameStore = useGameStore();
@@ -318,7 +318,7 @@ const sessionQueue = ref([]);
 const sessionStats = ref(createSessionStats());
 const outcome = ref(null);
 
-// Query params drive mode selection so handbook and map links can deep-link into practice.
+// 通过地址参数决定模式，方便图鉴和地图深链跳转。
 const practiceMode = computed(() => {
   const rawMode = Array.isArray(route.query.mode)
     ? route.query.mode[0]
@@ -327,12 +327,12 @@ const practiceMode = computed(() => {
   return rawMode === "drill" ? "drill" : "review";
 });
 
-// Drill mode only exposes chapters the player has already unlocked.
+// 章节训练模式只开放已解锁章节。
 const unlockedChapters = computed(() =>
   chapters.filter((chapter) => gameStore.player.unlockedChapters.includes(chapter.id)),
 );
 
-// Review mode can target any chapter filter, while drill mode falls back to the first unlocked chapter.
+// 错题复盘允许筛选任意章节，训练模式则回退到首个已解锁章节。
 const selectedChapterId = computed(() => {
   const rawChapterId = Array.isArray(route.query.chapter)
     ? route.query.chapter[0]
@@ -352,42 +352,42 @@ const selectedChapterId = computed(() => {
     : null;
 });
 
-// Chapter metadata is reused across labels, headings, and report copy.
+// 章节元数据会在标题、标签和报告文案里复用。
 const selectedChapter = computed(() =>
   selectedChapterId.value ? getChapterById(selectedChapterId.value) : null,
 );
 
 const practiceModeLabel = computed(() =>
-  practiceMode.value === "drill" ? "Chapter drill" : "Wrong-answer review",
+  practiceMode.value === "drill" ? "章节训练" : "错题复盘",
 );
 
 const pageTitle = computed(() =>
   practiceMode.value === "drill"
-    ? "Train a chapter with a fresh mixed set of prompts and check your rank at the end."
-    : "Rework missed prompts until the backlog starts to clear.",
+    ? "从已解锁章节中抽取一组题目集中训练，并在结算时查看你的评级。"
+    : "把错题重新刷一遍，直到这份积压清单开始变短。",
 );
 
 const sessionTitle = computed(() =>
-  practiceMode.value === "drill" ? "Focused chapter training" : "Backlog cleanup",
+  practiceMode.value === "drill" ? "章节专项训练" : "错题清理",
 );
 
 const targetLabel = computed(() => {
   if (practiceMode.value === "drill") {
-    return selectedChapter.value?.title ?? "No chapter";
+    return selectedChapter.value?.title ?? "暂无章节";
   }
 
-  return selectedChapter.value?.title ?? "All chapters";
+  return selectedChapter.value?.title ?? "全部章节";
 });
 
 const practiceDescription = computed(() => {
   if (practiceMode.value === "drill") {
-    return "Chapter drills pull a fresh mixed set of prompts from one unlocked region. Wrong answers are still recorded in the handbook.";
+    return "章节训练会从一个已解锁区域里抽取新的混合题目。答错的内容仍然会继续记录进错题本。";
   }
 
-  return "Review mode cycles unresolved prompts until you answer them correctly. Correct answers remove them from the wrong-answer book.";
+  return "错题复盘会反复轮转尚未掌握的题目，直到你答对为止。答对之后，这道题会从错题本中移除。";
 });
 
-// Review entries preserve backlog order using miss count and last-seen timestamp.
+// 错题复盘按照错误次数和最近出现时间排序，优先处理更难的题。
 function getReviewEntries(chapterId = null) {
   return gameStore.player.wrongQuestions
     .filter((entry) => chapterId === null || entry.chapterId === chapterId)
@@ -414,7 +414,7 @@ function getReviewEntries(chapterId = null) {
     });
 }
 
-// Drill entries come from the chapter bank and are capped for a short focused session.
+// 章节训练从题库中随机抽题，并控制在一轮短时训练范围内。
 function getDrillEntries(chapterId) {
   if (!chapterId) {
     return [];
@@ -423,23 +423,23 @@ function getDrillEntries(chapterId) {
   return shuffleEntries(getQuestionsByChapterId(chapterId)).slice(0, DRILL_SESSION_SIZE);
 }
 
-// Build the active queue from the current practice mode and route filter.
+// 按当前模式和筛选条件构建本轮训练队列。
 function buildSessionQueue() {
   return practiceMode.value === "drill"
     ? getDrillEntries(selectedChapterId.value)
     : getReviewEntries(selectedChapterId.value);
 }
 
-// Review filters mirror handbook filters, while drills only show unlocked chapters.
+// 复盘模式沿用错题本筛选，训练模式只展示已解锁章节。
 const reviewFilters = computed(() => [
   {
-    label: "All",
+    label: "全部",
     value: "all",
     count: gameStore.player.wrongQuestions.length,
     disabled: false,
   },
   ...chapters.map((chapter) => ({
-    label: `Chapter ${chapter.id}`,
+    label: `第 ${chapter.id} 章`,
     value: chapter.id,
     count: gameStore.player.wrongQuestions.filter(
       (entry) => entry.chapterId === chapter.id,
@@ -450,7 +450,7 @@ const reviewFilters = computed(() => [
 
 const drillFilters = computed(() =>
   unlockedChapters.value.map((chapter) => ({
-    label: `Chapter ${chapter.id}`,
+    label: `第 ${chapter.id} 章`,
     value: chapter.id,
     count: getQuestionsByChapterId(chapter.id).length,
     disabled: false,
@@ -461,7 +461,7 @@ const activeFilters = computed(() =>
   practiceMode.value === "drill" ? drillFilters.value : reviewFilters.value,
 );
 
-// Keep the selected filter shape compatible with both string and numeric filter values.
+// 统一过滤值的形态，兼容复盘模式的字符串和训练模式的数字章节 id。
 const currentFilterValue = computed(() => {
   if (practiceMode.value === "drill") {
     return selectedChapterId.value;
@@ -470,7 +470,7 @@ const currentFilterValue = computed(() => {
   return selectedChapterId.value ?? "all";
 });
 
-// Derived session state powers prompt headers, reports, and empty screens.
+// 这些派生状态会同时驱动题头、报告和空状态文案。
 const currentQuestion = computed(() => sessionQueue.value[0] ?? null);
 const sessionFinished = computed(() => !currentQuestion.value && sessionStats.value.asked > 0);
 const accuracy = computed(() => {
@@ -482,33 +482,33 @@ const accuracy = computed(() => {
 });
 
 const accuracyLabel = computed(() =>
-  sessionStats.value.asked > 0 ? `${accuracy.value}%` : "Pending",
+  sessionStats.value.asked > 0 ? `${accuracy.value}%` : "待开始",
 );
 
 const promptTitle = computed(() => {
   if (practiceMode.value === "drill") {
-    return `Drill prompt ${sessionStats.value.asked + 1}`;
+    return `训练题目 ${sessionStats.value.asked + 1}`;
   }
 
-  return `Backlog prompt ${sessionStats.value.correct + sessionStats.value.missed + 1}`;
+  return `错题题目 ${sessionStats.value.correct + sessionStats.value.missed + 1}`;
 });
 
 const remainingLabel = computed(() => {
   if (practiceMode.value === "drill") {
-    return `Queue left: ${sessionQueue.value.length}`;
+    return `剩余题数：${sessionQueue.value.length}`;
   }
 
-  return `Backlog left: ${getReviewEntries(selectedChapterId.value).length}`;
+  return `剩余错题：${getReviewEntries(selectedChapterId.value).length}`;
 });
 
 const advanceLabel = computed(() => {
   if (practiceMode.value === "review") {
     return sessionQueue.value.length > 1 || !outcome.value?.correct
-      ? "Next prompt"
-      : "Finish review";
+      ? "下一题"
+      : "完成复盘";
   }
 
-  return sessionQueue.value.length > 1 ? "Next drill prompt" : "Finish drill";
+  return sessionQueue.value.length > 1 ? "下一道训练题" : "完成训练";
 });
 
 const sessionRank = computed(() =>
@@ -523,44 +523,44 @@ const sessionRank = computed(() =>
 
 const reportTitle = computed(() =>
   practiceMode.value === "drill"
-    ? `${selectedChapter.value?.title ?? "Chapter"} drill complete.`
-    : "Wrong-answer review complete.",
+    ? `${selectedChapter.value?.title ?? "章节"} 训练完成。`
+    : "错题复盘完成。",
 );
 
 const reportMessage = computed(() => {
   if (practiceMode.value === "drill") {
     return accuracy.value >= 85
-      ? "Strong run. Your chapter fundamentals are holding up under pressure."
-      : "Good signal on what still needs work. The wrong-answer book has been updated where needed.";
+      ? "这轮表现很稳，这一章的基础掌握已经比较扎实。"
+      : "这轮结果已经很好地暴露出薄弱点，相关错题也已经同步记录。";
   }
 
   if (sessionStats.value.resolvedBacklog === sessionStats.value.initialSize) {
-    return "Every prompt in this review set was stabilized. The backlog is lighter now.";
+    return "这一轮错题已经全部重新掌握，错题积压明显变轻了。";
   }
 
-  return "The session is complete, but a few prompts still cycled before you locked them in.";
+  return "这轮复盘已经结束，但有几道题还在轮转，后面还值得再刷一遍。";
 });
 
 const emptyTitle = computed(() => {
   if (practiceMode.value === "drill") {
-    return "No drill session is ready for this chapter.";
+    return "当前章节暂时无法开始训练。";
   }
 
   return selectedChapter.value
-    ? "No missed prompts are waiting in this chapter."
-    : "No missed prompts are waiting right now.";
+    ? "这一章暂时没有待复盘错题。"
+    : "当前暂时没有待复盘错题。";
 });
 
 const emptyMessage = computed(() => {
   if (practiceMode.value === "drill") {
-    return "Switch to another unlocked chapter or head back into battle to unlock more regions and prompts.";
+    return "可以换到其他已解锁章节，或者回到战斗中继续解锁更多区域和题目。";
   }
 
   if (selectedChapter.value) {
-    return "This chapter is currently clean. Try another filter or jump into a fresh chapter drill.";
+    return "这一章目前很干净。你可以切换筛选条件，或者直接去做章节训练。";
   }
 
-  return "You do not have unresolved prompts yet. New misses from battle or chapter drills will appear here for focused review.";
+  return "你现在还没有待复盘题目。之后在战斗或章节训练中答错的新题会出现在这里。";
 });
 
 function resetSession() {
@@ -620,17 +620,17 @@ function applyFilter(filterValue) {
 
 function questionTypeLabel(type) {
   if (type === "judge") {
-    return "Judge";
+    return "判断题";
   }
 
   if (type === "code") {
-    return "Code Fill";
+    return "代码补全";
   }
 
-  return "Single Choice";
+  return "单选题";
 }
 
-// One answer updates the session report and, when relevant, the wrong-answer backlog.
+// 每次作答都会同步更新练习统计，并在必要时改动错题本。
 function submitAnswer(option) {
   if (!currentQuestion.value || outcome.value) {
     return;
@@ -668,13 +668,13 @@ function submitAnswer(option) {
     explanation: question.explanation,
     effectLine: correct
       ? wasTrackedWrong
-        ? "Correct answer. This prompt is removed from the wrong-answer book."
-        : "Correct answer. The drill stays clean and your streak continues."
-      : "Wrong answer. The handbook keeps this prompt active for another review pass.",
+        ? "回答正确，这道题已从错题本中移除。"
+        : "回答正确，这轮训练保持干净，连击继续累积。"
+      : "回答错误，这道题会继续保留在图鉴错题本里。",
   };
 }
 
-// Review mode repeats misses, while drill mode advances after one pass per prompt.
+// 复盘模式会把错题重新放回队列，训练模式则每题只过一遍。
 function advancePrompt() {
   if (!currentQuestion.value || !outcome.value) {
     return;
@@ -693,6 +693,6 @@ function advancePrompt() {
   outcome.value = null;
 }
 
-// Any mode or filter change starts a fresh local practice session.
+// 切换模式或筛选条件时，都会重新建立一轮新的本地练习会话。
 watch([practiceMode, selectedChapterId], resetSession, { immediate: true });
 </script>

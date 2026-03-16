@@ -5,14 +5,63 @@ import { getQuestionsByIds } from "../data/questions";
 import { calcDamage } from "../utils/calcDamage";
 import { useGameStore } from "./game";
 
-// Different prompt types slightly shift damage so code questions feel punchier.
+// 不同题型会略微影响伤害倍率，让代码题更有爆发感。
 const QUESTION_DAMAGE_SCALE = {
   single: 1,
   judge: 0.92,
   code: 1.22,
 };
 
-// Battle state is reset per encounter and never persisted directly.
+// 敌方技能名按章节和阶段切换，让每个区域的反击都更有辨识度。
+const ENEMY_SKILL_BOOK = {
+  1: {
+    normal: ["插值黏液喷射", "指令扰动"],
+    bossPhaseOne: ["模板束缚", "条件翻转"],
+    bossPhaseTwo: ["循环风暴", "事件乱流"],
+  },
+  2: {
+    normal: ["值窃脉冲", "响应撞击"],
+    bossPhaseOne: ["依赖压制", "代理震荡"],
+    bossPhaseTwo: ["响应坍缩", "值域过载"],
+  },
+  3: {
+    normal: ["推导凝视", "监听尖啸"],
+    bossPhaseOne: ["副作用咒缚", "依赖回响"],
+    bossPhaseTwo: ["监听风暴", "失控推导"],
+  },
+  4: {
+    normal: ["断链冲撞", "插槽吞噬"],
+    bossPhaseOne: ["属性封锁", "事件失联"],
+    bossPhaseTwo: ["通信暴潮", "插槽崩坏"],
+  },
+  5: {
+    normal: ["组合折射", "逻辑抽离"],
+    bossPhaseOne: ["重复回环", "Setup 压制"],
+    bossPhaseTwo: ["复用失衡", "组合风暴"],
+  },
+  6: {
+    normal: ["路径偏折", "参数缠绕"],
+    bossPhaseOne: ["守卫盘查", "动态迷航"],
+    bossPhaseTwo: ["路径折叠", "导航封锁"],
+  },
+  7: {
+    normal: ["状态涟漪", "共享侵蚀"],
+    bossPhaseOne: ["Action 封锁", "状态错乱"],
+    bossPhaseTwo: ["全局过载", "状态回收"],
+  },
+};
+
+// 首领机制统一收敛成几类状态，方便界面展示和后续继续扩展。
+function createBossEffects() {
+  return {
+    enemyBarrier: 0,
+    playerDamageDown: 0,
+    skillLocked: false,
+    guardBreak: false,
+  };
+}
+
+// 战斗状态按遭遇重置，不直接写入长期存档。
 function createBattleState() {
   return {
     status: "idle",
@@ -29,35 +78,177 @@ function createBattleState() {
     wrongAnswerCount: 0,
     bossPhase: 0,
     bossPhaseTriggered: false,
+    bossEffects: createBossEffects(),
     lastOutcome: null,
     battleResult: null,
     log: [],
   };
 }
 
-// Resolve the damage multiplier from the active prompt type.
+// 根据题型读取对应的伤害倍率。
 function getQuestionScale(questionType) {
   return QUESTION_DAMAGE_SCALE[questionType] ?? 1;
 }
 
-// Enemy intent text gives the UI a readable preview of the next counterattack.
+// 技能名和敌人意图解耦，这样界面可以同时显示“招式名”和“攻击倾向”。
+function getEnemySkillName(enemy, bossPhase, turn) {
+  if (!enemy) {
+    return null;
+  }
+
+  const skillBook = ENEMY_SKILL_BOOK[enemy.chapterId] ?? ENEMY_SKILL_BOOK[1];
+  const rotation =
+    enemy.role !== "Boss"
+      ? skillBook.normal
+      : bossPhase < 2
+        ? skillBook.bossPhaseOne
+        : skillBook.bossPhaseTwo;
+
+  return rotation[turn % 2 === 0 ? 1 : 0] ?? rotation[0] ?? "失控反击";
+}
+
+// 敌人意图文案会在界面上展示下一次反击倾向。
 function getEnemyIntent(enemy, bossPhase, turn) {
   if (!enemy) {
     return null;
   }
 
   if (enemy.role !== "Boss") {
-    return turn % 2 === 0 ? "Measured counterattack" : "Standard strike";
+    return turn % 2 === 0 ? "蓄力反击" : "标准攻击";
   }
 
   if (bossPhase < 2) {
-    return turn % 2 === 0 ? "Scripted probe" : "Guard break";
+    return turn % 2 === 0 ? "试探施压" : "破防重击";
   }
 
-  return turn % 2 === 0 ? "Overload barrage" : "Enraged strike";
+  return turn % 2 === 0 ? "过载连击" : "狂怒斩击";
 }
 
-// End-of-fight rank is based on cleanliness, combo skill, and boss handling.
+// 同一套计算会被预警面板和实际受击结算复用，保证展示与结果一致。
+function getEnemyCounterProfile(enemy, playerSnapshot, bossPhase, turn, guardRate = 0) {
+  if (!enemy || !playerSnapshot) {
+    return null;
+  }
+
+  let enemyScale = 1 - guardRate;
+  let enemyAttack = enemy.attack;
+
+  if (enemy.role === "Boss" && bossPhase === 1 && turn % 2 === 0) {
+    enemyScale *= 1.12;
+  }
+
+  if (enemy.role === "Boss" && bossPhase === 2) {
+    enemyAttack += 4;
+    enemyScale *= turn % 2 === 0 ? 1.55 : 1.2;
+  }
+
+  return {
+    attack: enemyAttack,
+    scale: enemyScale,
+    damage: calcDamage(enemyAttack, playerSnapshot.defense, enemyScale),
+  };
+}
+
+// 威胁等级会综合伤害量和玩家血量，让提示更贴近真实危险度。
+function buildThreatMeta(damage, maxHp, isBossBattle) {
+  const safeMaxHp = Math.max(maxHp ?? 0, 1);
+  const ratio = damage / safeMaxHp;
+
+  if (ratio >= 0.32 || damage >= (isBossBattle ? 34 : 26)) {
+    return {
+      label: "极高",
+      tone: "critical",
+    };
+  }
+
+  if (ratio >= 0.22 || damage >= (isBossBattle ? 24 : 18)) {
+    return {
+      label: "高",
+      tone: "high",
+    };
+  }
+
+  if (ratio >= 0.12 || damage >= 10) {
+    return {
+      label: "中",
+      tone: "mid",
+    };
+  }
+
+  return {
+    label: "低",
+    tone: "low",
+  };
+}
+
+// 首领技能会在当前回合结束后附带额外效果，逼迫玩家调整下一回合策略。
+function applyBossAftershock(enemy, bossPhase, skillName, playerSnapshot, bossEffects) {
+  if (!enemy || enemy.role !== "Boss" || !playerSnapshot) {
+    return null;
+  }
+
+  switch (enemy.chapterId) {
+    case 1: {
+      const barrier = bossPhase >= 2 ? 12 : 8;
+      bossEffects.enemyBarrier = barrier;
+      return `${skillName} 留下了模板护幕，首领下回合会先吸收 ${barrier} 点伤害。`;
+    }
+    case 2: {
+      const mpDrain = Math.min(playerSnapshot.mp, bossPhase >= 2 ? 8 : 6);
+      playerSnapshot.mp -= mpDrain;
+      bossEffects.skillLocked = true;
+      return `${skillName} 扰乱了响应回路，抽走 ${mpDrain} 点 MP，并封锁了下回合的 Vue 爆发。`;
+    }
+    case 3: {
+      const reduction = bossPhase >= 2 ? 0.32 : 0.24;
+      bossEffects.playerDamageDown = reduction;
+      return `${skillName} 扭曲了依赖链，你下次造成的伤害会降低 ${Math.round(reduction * 100)}%。`;
+    }
+    case 4: {
+      const barrier = bossPhase >= 2 ? 10 : 7;
+      bossEffects.enemyBarrier = barrier;
+      bossEffects.guardBreak = true;
+      return `${skillName} 切断了通信链路，首领获得 ${barrier} 点护幕，且下回合调试防御几乎无效。`;
+    }
+    case 5: {
+      const reduction = bossPhase >= 2 ? 0.28 : 0.2;
+      bossEffects.playerDamageDown = reduction;
+
+      if (bossPhase >= 2) {
+        bossEffects.skillLocked = true;
+        return `${skillName} 让逻辑复用彻底失衡，下回合伤害降低 ${Math.round(reduction * 100)}%，Vue 爆发也会被压制。`;
+      }
+
+      return `${skillName} 打乱了你的 composable 节奏，下回合伤害降低 ${Math.round(reduction * 100)}%。`;
+    }
+    case 6: {
+      bossEffects.guardBreak = true;
+
+      if (bossPhase >= 2) {
+        bossEffects.enemyBarrier = 8;
+        return `${skillName} 折叠了退路，下回合调试防御几乎无效，且首领会先吸收 8 点伤害。`;
+      }
+
+      return `${skillName} 锁死了退路，下回合调试防御几乎无效。`;
+    }
+    case 7: {
+      const mpDrain = Math.min(playerSnapshot.mp, bossPhase >= 2 ? 10 : 6);
+      playerSnapshot.mp -= mpDrain;
+      bossEffects.skillLocked = true;
+
+      if (bossPhase >= 2) {
+        bossEffects.playerDamageDown = 0.2;
+        return `${skillName} 扭曲了全局状态，抽走 ${mpDrain} 点 MP，下回合无法施放 Vue 爆发，且伤害降低 20%。`;
+      }
+
+      return `${skillName} 搅乱了状态流，抽走 ${mpDrain} 点 MP，并封锁了下回合的 Vue 爆发。`;
+    }
+    default:
+      return null;
+  }
+}
+
+// 战斗评级由正确率、连击表现和首领阶段处理共同决定。
 function buildBattleRank({ isBossBattle, perfectClear, maxCombo, bossPhaseTriggered }) {
   if (perfectClear && maxCombo >= 4) {
     return "S";
@@ -78,20 +269,111 @@ export const useBattleStore = defineStore("battle", {
   state: () => createBattleState(),
 
   getters: {
-    // Skill attacks cost a flat amount of MP in the MVP.
-    canUseSkill: (state) => state.playerSnapshot?.mp >= 10,
+    // 目前版本里，技能攻击统一消耗固定 MP。
+    canUseSkill: (state) => state.playerSnapshot?.mp >= 10 && !state.bossEffects.skillLocked,
     isBossBattle: (state) => state.enemy?.role === "Boss",
-    // The UI shows intent as a computed read-only battle hint.
+    // 界面会把敌人意图当成回合提示显示出来。
     enemyIntent: (state) => getEnemyIntent(state.enemy, state.bossPhase, state.turn),
+    // 战术预警面板依赖这里生成统一的技能、威胁和承伤预测。
+    enemyPreview: (state) => {
+      const rawProfile = getEnemyCounterProfile(
+        state.enemy,
+        state.playerSnapshot,
+        state.bossPhase,
+        state.turn,
+        0,
+      );
+
+      if (!rawProfile || !state.enemy || !state.playerSnapshot) {
+        return null;
+      }
+
+      const successGuardRate = state.bossEffects.guardBreak
+        ? 0.25
+        : state.currentQuestion?.type === "judge"
+          ? 0.72
+          : 0.6;
+      const guardedProfile = getEnemyCounterProfile(
+        state.enemy,
+        state.playerSnapshot,
+        state.bossPhase,
+        state.turn,
+        successGuardRate,
+      );
+      const failedGuardProfile = getEnemyCounterProfile(
+        state.enemy,
+        state.playerSnapshot,
+        state.bossPhase,
+        state.turn,
+        0.25,
+      );
+      const threat = buildThreatMeta(
+        rawProfile.damage,
+        state.playerSnapshot.maxHp,
+        state.enemy.role === "Boss",
+      );
+
+      return {
+        skillName: getEnemySkillName(state.enemy, state.bossPhase, state.turn),
+        intent: getEnemyIntent(state.enemy, state.bossPhase, state.turn),
+        rawDamage: rawProfile.damage,
+        guardedDamage: guardedProfile?.damage ?? rawProfile.damage,
+        failedGuardDamage: failedGuardProfile?.damage ?? rawProfile.damage,
+        threatLabel: threat.label,
+        threatTone: threat.tone,
+      };
+    },
+    // 这些状态会在首领攻击后的下一回合生效，因此需要明确展示给玩家。
+    activeBossEffects: (state) => {
+      const effects = [];
+
+      if (state.bossEffects.enemyBarrier > 0) {
+        effects.push({
+          id: "enemy-barrier",
+          label: "首领护幕",
+          detail: `下次攻击先抵消 ${state.bossEffects.enemyBarrier} 点伤害`,
+          tone: "high",
+        });
+      }
+
+      if (state.bossEffects.playerDamageDown > 0) {
+        effects.push({
+          id: "player-damage-down",
+          label: "输出受限",
+          detail: `下次伤害降低 ${Math.round(state.bossEffects.playerDamageDown * 100)}%`,
+          tone: "high",
+        });
+      }
+
+      if (state.bossEffects.skillLocked) {
+        effects.push({
+          id: "skill-locked",
+          label: "技能封锁",
+          detail: "下回合无法使用 Vue 爆发",
+          tone: "critical",
+        });
+      }
+
+      if (state.bossEffects.guardBreak) {
+        effects.push({
+          id: "guard-break",
+          label: "防御失效",
+          detail: "下回合调试防御几乎不会减伤",
+          tone: "critical",
+        });
+      }
+
+      return effects;
+    },
   },
 
   actions: {
-    // Reset is called when leaving battle routes or starting a new encounter.
+    // 离开战斗或开启新遭遇时，重置整份临时战斗状态。
     resetBattle() {
       this.$patch(createBattleState());
     },
 
-    // Initialize one encounter from enemy data plus the current persistent player sheet.
+    // 根据敌人数据和当前玩家面板初始化一场战斗。
     startBattle(enemyId) {
       const gameStore = useGameStore();
       const enemy = getEnemyById(enemyId);
@@ -128,15 +410,15 @@ export const useBattleStore = defineStore("battle", {
       this.lastOutcome = null;
       this.battleResult = null;
       this.log = [
-        `Intent: ${getEnemyIntent(enemy, this.bossPhase, this.turn)}.`,
-        `${enemy.name} blocks the road.`,
+        `意图：${getEnemyIntent(enemy, this.bossPhase, this.turn)}。`,
+        `${enemy.name} 挡在了前进的道路上。`,
       ];
       this.drawQuestion();
 
       return true;
     },
 
-    // If the player leaves mid-fight, keep the current HP and MP changes.
+    // 中途离开战斗时，也要保留当前血蓝变化。
     commitProgressOnExit() {
       if (!this.playerSnapshot || !["in_progress", "resolved"].includes(this.status)) {
         return;
@@ -146,7 +428,7 @@ export const useBattleStore = defineStore("battle", {
       gameStore.syncVitals(this.playerSnapshot.hp, this.playerSnapshot.mp);
     },
 
-    // Action selection is only mutable while waiting for an answer.
+    // 只有在等待答题时，玩家才允许切换行动。
     setSelectedAction(action) {
       if (this.status !== "in_progress") {
         return;
@@ -159,7 +441,7 @@ export const useBattleStore = defineStore("battle", {
       this.selectedAction = action;
     },
 
-    // Draw a question without repeating until the local encounter pool is exhausted.
+    // 本地题池未用尽前，尽量避免重复抽题。
     drawQuestion() {
       if (!this.enemy) {
         this.currentQuestion = null;
@@ -187,7 +469,7 @@ export const useBattleStore = defineStore("battle", {
       this.currentQuestion = nextQuestion;
     },
 
-    // Bosses gain a one-time phase shift once they drop below half health.
+    // 首领掉到半血以下时会触发一次性的阶段切换。
     maybeTriggerBossPhase() {
       if (!this.enemy || this.enemy.role !== "Boss" || this.bossPhaseTriggered) {
         return null;
@@ -205,14 +487,14 @@ export const useBattleStore = defineStore("battle", {
       const restoredHp = Math.max(12, Math.round(this.enemy.maxHp * 0.18));
       this.enemyHp = Math.min(this.enemy.maxHp, this.enemyHp + restoredHp);
 
-      const phaseLine = `${this.enemy.name} enters Phase 2, restores ${restoredHp} HP, and sharpens its pattern.`;
+      const phaseLine = `${this.enemy.name} 进入第二阶段，恢复了 ${restoredHp} 点 HP，并改变了攻击节奏。`;
       this.log.unshift(phaseLine);
       this.log = this.log.slice(0, 10);
 
       return phaseLine;
     },
 
-    // One submitted answer resolves the player action, enemy counter, and result state.
+    // 一次答题会同时结算玩家行动、敌人反击和本回合结果。
     submitAnswer(option) {
       if (
         this.status !== "in_progress" ||
@@ -230,7 +512,9 @@ export const useBattleStore = defineStore("battle", {
       const comboBonus = correct
         ? 1 + Math.min(Math.max(0, nextCombo - 1), 3) * 0.08
         : 1;
-      // Action can still downgrade to a basic attack if MP ran out between turns.
+      const queuedBossEffects = { ...this.bossEffects };
+      this.bossEffects = createBossEffects();
+      // 如果 MP 不足，技能会自动降级成普通攻击。
       let enemyIntent = getEnemyIntent(this.enemy, this.bossPhase, this.turn);
       let action = this.selectedAction;
       let playerDamage = 0;
@@ -239,6 +523,11 @@ export const useBattleStore = defineStore("battle", {
 
       if (!correct) {
         this.wrongAnswerCount += 1;
+      }
+
+      if (queuedBossEffects.skillLocked && action === "skill") {
+        action = "attack";
+        effectLine = "首领留下的封锁仍在生效，Vue 爆发被压制成了普通攻击。";
       }
 
       if (action === "skill" && !this.canUseSkill) {
@@ -258,8 +547,8 @@ export const useBattleStore = defineStore("battle", {
           );
           effectLine =
             nextCombo >= 3
-              ? "Correct answer. Basic Strike extends the combo."
-              : "Correct answer. Basic Strike lands cleanly.";
+              ? "回答正确，普通攻击延续了连击。"
+              : "回答正确，普通攻击命中。";
         }
 
         if (action === "skill") {
@@ -270,37 +559,59 @@ export const useBattleStore = defineStore("battle", {
           );
           effectLine =
             this.currentQuestion.type === "code"
-              ? "Correct code fill. Vue Burst lands a critical hit."
-              : "Correct answer. Vue Burst hits for bonus damage.";
+              ? "代码题回答正确，Vue 爆发打出了暴击。"
+              : "回答正确，Vue 爆发造成了额外伤害。";
         }
 
         if (action === "guard") {
           this.pendingGuard = this.currentQuestion.type === "judge" ? 0.72 : 0.6;
+
+          if (queuedBossEffects.guardBreak) {
+            this.pendingGuard = Math.min(this.pendingGuard, 0.25);
+          }
+
           this.playerSnapshot.mp = Math.min(
             this.playerSnapshot.maxMp,
             this.playerSnapshot.mp + 6,
           );
           effectLine =
             nextCombo >= 2
-              ? "Correct answer. Debug Guard holds the combo and softens the hit."
-              : "Correct answer. Debug Guard softens the counterattack.";
+              ? "回答正确，调试防御保住了连击并削弱了下一次受击。"
+              : "回答正确，调试防御减轻了敌人的反击。";
+
+          if (queuedBossEffects.guardBreak) {
+            effectLine = `${effectLine} 但首领的封锁让这次防御几乎失效。`;
+          }
         }
       } else {
         if (action === "guard") {
           this.pendingGuard = 0.25;
-          effectLine =
-            "Wrong answer. Your guard still takes the edge off the next hit.";
+          effectLine = "回答错误，但你的防御仍然替你挡掉了一部分伤害。";
         } else {
-          effectLine = "Wrong answer. The attack fizzles before it connects.";
+          effectLine = "回答错误，攻击在命中前就已经失效了。";
         }
 
         gameStore.recordWrongQuestion(this.currentQuestion);
       }
 
+      if (playerDamage > 0 && queuedBossEffects.playerDamageDown > 0) {
+        playerDamage = Math.max(
+          1,
+          Math.round(playerDamage * (1 - queuedBossEffects.playerDamageDown)),
+        );
+        effectLine = `${effectLine} 你的输出被首领压制了一部分。`;
+      }
+
+      if (playerDamage > 0 && queuedBossEffects.enemyBarrier > 0) {
+        const absorbedDamage = Math.min(playerDamage, queuedBossEffects.enemyBarrier);
+        playerDamage -= absorbedDamage;
+        effectLine = `${effectLine} 首领护幕吸收了 ${absorbedDamage} 点伤害。`;
+      }
+
       this.comboStreak = nextCombo;
       this.maxCombo = Math.max(this.maxCombo, nextCombo);
 
-      // Boss phase 2 reduces incoming player damage so the fight feels more distinct.
+      // 首领二阶段会降低玩家造成的伤害，让阶段差异更明显。
       if (playerDamage > 0 && this.enemy.role === "Boss" && this.bossPhase === 2) {
         playerDamage = Math.max(3, Math.round(playerDamage * 0.82));
       }
@@ -344,10 +655,10 @@ export const useBattleStore = defineStore("battle", {
           rank,
           perfectClear,
           maxCombo: this.maxCombo,
-          title: "Victory",
+          title: "胜利",
           message: rewards.alreadyCleared
-            ? "This encounter was already cleared, so this run counts as practice."
-            : "The monster dissolves into study notes and loot.",
+            ? "这场遭遇已经通关过了，所以这次只会算作练习。"
+            : "怪物化作知识碎片和战利品消散了。",
         };
         this.lastOutcome = {
           correct,
@@ -364,26 +675,35 @@ export const useBattleStore = defineStore("battle", {
         return;
       }
 
-      // Guard modifies the next retaliation rather than the current attack itself.
-      let enemyScale = 1 - this.pendingGuard;
-      let enemyAttack = this.enemy.attack;
-
-      if (this.enemy.role === "Boss" && this.bossPhase === 1 && this.turn % 2 === 0) {
-        enemyScale *= 1.12;
-      }
-
-      if (this.enemy.role === "Boss" && this.bossPhase === 2) {
-        enemyAttack += 4;
-        enemyScale *= this.turn % 2 === 0 ? 1.55 : 1.2;
-      }
-
-      enemyDamage = calcDamage(
-        enemyAttack,
-        this.playerSnapshot.defense,
-        enemyScale,
+      // 防御影响的是敌人的反击，不是当前玩家出手。
+      const enemySkillName = getEnemySkillName(this.enemy, this.bossPhase, this.turn);
+      const enemyCounterProfile = getEnemyCounterProfile(
+        this.enemy,
+        this.playerSnapshot,
+        this.bossPhase,
+        this.turn,
+        this.pendingGuard,
       );
+      const enemyThreat = buildThreatMeta(
+        enemyCounterProfile?.damage ?? 0,
+        this.playerSnapshot.maxHp,
+        this.enemy.role === "Boss",
+      );
+      const bossEffectLine = applyBossAftershock(
+        this.enemy,
+        this.bossPhase,
+        enemySkillName,
+        this.playerSnapshot,
+        this.bossEffects,
+      );
+
+      enemyDamage = enemyCounterProfile?.damage ?? 0;
       this.playerSnapshot.hp = Math.max(0, this.playerSnapshot.hp - enemyDamage);
       this.pendingGuard = 0;
+
+      if (bossEffectLine) {
+        effectLine = `${effectLine} ${bossEffectLine}`;
+      }
 
       if (this.playerSnapshot.hp <= 0) {
         const defeatState = gameStore.applyDefeat({
@@ -393,10 +713,10 @@ export const useBattleStore = defineStore("battle", {
 
         this.status = "defeat";
         this.battleResult = {
-          title: "Retreat",
+          title: "败退",
           message:
-            "The lesson wins this time. You recover a little at camp and can regroup from the map.",
-          rank: "Retry",
+            "这一次是题目赢了。你会在营地恢复一部分状态，然后从地图重新整备。",
+          rank: "重试",
           maxCombo: this.maxCombo,
           ...defeatState,
         };
@@ -411,17 +731,22 @@ export const useBattleStore = defineStore("battle", {
         action,
         playerDamage,
         enemyDamage,
+        enemySkillName,
+        enemyThreatLabel: enemyThreat.label,
+        enemyThreatTone: enemyThreat.tone,
         explanation: this.currentQuestion.explanation,
         effectLine,
         comboStreak: this.comboStreak,
       };
 
-      this.log.unshift(`${this.enemy.name} uses ${enemyIntent} for ${enemyDamage} damage.`);
+      this.log.unshift(
+        `${this.enemy.name} 施放了「${enemySkillName}」，以${enemyIntent}造成 ${enemyDamage} 点伤害。`,
+      );
       this.log.unshift(effectLine);
       this.log = this.log.slice(0, 10);
     },
 
-    // Advance to the next turn only after the player has read the previous outcome.
+    // 玩家读完结果后，才允许正式进入下一回合。
     advanceTurn() {
       if (this.status !== "resolved") {
         return;
@@ -435,7 +760,7 @@ export const useBattleStore = defineStore("battle", {
 
       if (this.enemy) {
         this.log.unshift(
-          `Intent: ${getEnemyIntent(this.enemy, this.bossPhase, this.turn)}.`,
+          `意图：${getEnemyIntent(this.enemy, this.bossPhase, this.turn)}。`,
         );
         this.log = this.log.slice(0, 10);
       }

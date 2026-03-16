@@ -1,39 +1,39 @@
-// Items cover both consumables and equipment so the inventory can stay data-driven.
+// 道具同时覆盖消耗品和装备，让背包系统保持数据驱动。
 export const items = [
   {
     id: "patch-potion",
-    name: "Patch Potion",
+    name: "补丁药水",
     type: "consumable",
-    description: "Restore 35 HP before the next encounter.",
+    description: "恢复 35 点 HP，适合在下一场遭遇前补状态。",
     effect: {
       hp: 35,
     },
   },
   {
     id: "focus-tonic",
-    name: "Focus Tonic",
+    name: "专注药剂",
     type: "consumable",
-    description: "Restore 20 MP for stronger skill turns.",
+    description: "恢复 20 点 MP，便于打出更强技能回合。",
     effect: {
       mp: 20,
     },
   },
   {
     id: "ref-training-sword",
-    name: "Ref Training Sword",
+    name: "Ref 训练木剑",
     type: "equipment",
     slot: "weapon",
-    description: "Starter blade that sharpens your basic attacks.",
+    description: "新手木剑，能让基础攻击更扎实。",
     stats: {
       attack: 2,
     },
   },
   {
     id: "oak-guard-cloak",
-    name: "Oak Guard Cloak",
+    name: "橡木守护披风",
     type: "equipment",
     slot: "armor",
-    description: "A field cloak that adds a little bulk to your guard.",
+    description: "适合野外试炼的披风，能稍微强化你的防御。",
     stats: {
       defense: 1,
       maxHp: 8,
@@ -41,10 +41,10 @@ export const items = [
   },
   {
     id: "reactive-charm",
-    name: "Reactive Charm",
+    name: "响应护符",
     type: "equipment",
     slot: "charm",
-    description: "A humming trinket that stabilizes health and mana.",
+    description: "嗡鸣不止的护符，能同时稳定生命与法力。",
     stats: {
       maxHp: 10,
       maxMp: 4,
@@ -52,10 +52,10 @@ export const items = [
   },
   {
     id: "computed-ring",
-    name: "Computed Ring",
+    name: "Computed 戒指",
     type: "equipment",
     slot: "ring",
-    description: "A precise ring that boosts attack and mana efficiency.",
+    description: "一枚精确运作的戒指，提升攻击和法力效率。",
     stats: {
       attack: 2,
       maxMp: 6,
@@ -63,10 +63,10 @@ export const items = [
   },
   {
     id: "slot-cape",
-    name: "Slot Cape",
+    name: "插槽披风",
     type: "equipment",
     slot: "cape",
-    description: "A stitched cape that reinforces defensive insertion points.",
+    description: "缝满接口的披风，让防守时的插槽结构更稳固。",
     stats: {
       defense: 2,
       maxHp: 12,
@@ -74,10 +74,10 @@ export const items = [
   },
   {
     id: "emitter-greaves",
-    name: "Emitter Greaves",
+    name: "事件护胫",
     type: "equipment",
     slot: "boots",
-    description: "Greaves tuned for cleaner event timing and sharper attacks.",
+    description: "针对事件节奏打造的护胫，让攻击出手更利落。",
     stats: {
       attack: 1,
       defense: 2,
@@ -86,10 +86,10 @@ export const items = [
   },
   {
     id: "composable-lantern",
-    name: "Composable Lantern",
+    name: "组合提灯",
     type: "equipment",
     slot: "relic",
-    description: "A lantern that reveals repeated logic and rewards patient structure.",
+    description: "能照出重复逻辑的提灯，奖励耐心整理结构的人。",
     stats: {
       maxMp: 8,
       defense: 1,
@@ -97,10 +97,10 @@ export const items = [
   },
   {
     id: "setup-sigil",
-    name: "Setup Sigil",
+    name: "Setup 纹章",
     type: "equipment",
     slot: "sigil",
-    description: "An engraved sigil that sharpens both setup discipline and battle tempo.",
+    description: "雕刻精细的纹章，同时强化 setup 纪律和战斗节奏。",
     stats: {
       attack: 2,
       maxHp: 8,
@@ -109,10 +109,10 @@ export const items = [
   },
   {
     id: "route-thread",
-    name: "Route Thread",
+    name: "路由丝线",
     type: "equipment",
     slot: "thread",
-    description: "A glowing thread that keeps your path stable through nested routes.",
+    description: "发光丝线能在嵌套路由中帮你保持路径稳定。",
     stats: {
       defense: 2,
       maxMp: 6,
@@ -120,10 +120,10 @@ export const items = [
   },
   {
     id: "guardians-compass",
-    name: "Guardian's Compass",
+    name: "守卫者罗盘",
     type: "equipment",
     slot: "compass",
-    description: "A compass tuned to guarded paths and fast transitions.",
+    description: "对守卫路径极其敏感的罗盘，适合快速切换与导航。",
     stats: {
       attack: 2,
       defense: 2,
@@ -132,10 +132,10 @@ export const items = [
   },
   {
     id: "pinia-scroll",
-    name: "Pinia Scroll",
+    name: "Pinia 卷轴",
     type: "equipment",
     slot: "scroll",
-    description: "A sealed scroll describing clean store boundaries and stable shared state.",
+    description: "封印卷轴记载着清晰的 store 边界和稳定的共享状态结构。",
     stats: {
       attack: 1,
       maxMp: 8,
@@ -143,10 +143,10 @@ export const items = [
   },
   {
     id: "crown-of-shared-state",
-    name: "Crown of Shared State",
+    name: "共享状态王冠",
     type: "equipment",
     slot: "crown",
-    description: "The final crown that harmonizes offense, defense, and every linked state channel.",
+    description: "最终王冠，能协调攻击、防御和每一条已连接的状态通道。",
     stats: {
       attack: 3,
       defense: 3,
@@ -156,7 +156,7 @@ export const items = [
   },
 ];
 
-// Shared item lookup for rewards, inventory rendering, and equip validation.
+// 奖励结算、背包渲染和装备校验都会用到这个查询方法。
 export function getItemById(itemId) {
   return items.find((item) => item.id === itemId) ?? null;
 }

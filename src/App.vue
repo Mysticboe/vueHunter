@@ -1,6 +1,9 @@
 <template>
-  <div class="app-shell">
-    <!-- Keep the global nav persistent while route views swap underneath it. -->
+  <div
+    class="app-shell"
+    :class="{ 'app-shell--reduced-motion': gameStore.preferences.reducedMotion }"
+  >
+    <!-- 全局导航保持常驻，页面主体只切换当前路由视图。 -->
     <GlobalNav />
     <RouterView />
   </div>
@@ -10,6 +13,8 @@
 import { RouterView } from "vue-router";
 
 import GlobalNav from "./components/common/GlobalNav.vue";
+import { useGameStore } from "./stores/game";
 
-// App.vue only composes the shared frame for the rest of the game.
+// 这里是应用总外壳，只负责拼装常驻导航和当前路由页面。
+const gameStore = useGameStore();
 </script>

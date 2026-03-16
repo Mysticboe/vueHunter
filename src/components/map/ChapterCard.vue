@@ -4,9 +4,9 @@
     :class="[`chapter-card--${chapter.accent}`, { 'chapter-card--locked': !unlocked }]"
   >
     <div class="panel__eyebrow">
-      Chapter {{ chapter.id }}
+      第 {{ chapter.id }} 章
       <span class="chapter-card__status">
-        {{ unlocked ? (cleared ? "Cleared" : "Unlocked") : "Locked" }}
+        {{ unlocked ? (cleared ? "已通关" : "已解锁") : "未解锁" }}
       </span>
     </div>
     <h2 class="panel__title">{{ chapter.title }}</h2>
@@ -24,10 +24,10 @@
     </div>
 
     <div class="chapter-card__progress">
-      Progress: {{ progress.cleared }} / {{ progress.total }}
+      进度：{{ progress.cleared }} / {{ progress.total }}
     </div>
 
-    <!-- Encounter buttons are data-driven so chapters can grow without template rewrites. -->
+    <!-- 遭遇按钮完全来自数据层，章节扩展时不用改模板结构。 -->
     <div class="chapter-card__encounters">
       <button
         v-for="enemy in enemies"
@@ -39,7 +39,7 @@
       >
         <span>{{ enemy.name }}</span>
         <small>
-          {{ clearedEnemies.includes(enemy.id) ? "Practice again" : enemy.role }}
+          {{ clearedEnemies.includes(enemy.id) ? "再次练习" : enemy.role === "Boss" ? "首领" : enemy.role }}
         </small>
       </button>
     </div>
@@ -47,7 +47,7 @@
 </template>
 
 <script setup>
-// The map passes precomputed chapter state so this card stays presentational.
+// 地图页会把章节状态预先算好，这个组件只负责展示。
 defineProps({
   chapter: {
     type: Object,
@@ -75,6 +75,6 @@ defineProps({
   },
 });
 
-// Clicking any encounter asks the parent view to route into that battle.
+// 点击遭遇按钮后，由父组件决定跳转到哪场战斗。
 defineEmits(["challenge"]);
 </script>

@@ -2,8 +2,8 @@
   <main class="page-shell utility-view">
     <header class="panel utility-header">
       <div>
-        <div class="panel__eyebrow">Handbook</div>
-        <h1 class="panel__title">Monster notes, chapter tags, and missed prompts.</h1>
+        <div class="panel__eyebrow">图鉴</div>
+        <h1 class="panel__title">查看怪物档案、章节知识点和错题记录。</h1>
       </div>
       <div class="page-links">
         <button
@@ -11,21 +11,21 @@
           class="button button--ghost"
           @click="router.push('/map')"
         >
-          Map
+          地图
         </button>
         <button
           type="button"
           class="button button--ghost"
           @click="router.push('/inventory')"
         >
-          Inventory
+          背包
         </button>
         <button
           type="button"
           class="button button--ghost"
           @click="router.push('/skills')"
         >
-          Skill tree
+          技能树
         </button>
         <button
           type="button"
@@ -33,16 +33,16 @@
           :disabled="!hasWrongQuestions"
           @click="openPractice({ filter: 'all' })"
         >
-          Review
+          复盘
         </button>
       </div>
     </header>
 
     <section class="utility-grid">
-      <!-- The codex reveals enemies only after the player has met them in battle. -->
+      <!-- 怪物图鉴只会展示已经遇到过的敌人。 -->
       <section class="panel panel--wide">
-        <div class="panel__eyebrow">Monster Codex</div>
-        <h2 class="panel__title">Encountered foes</h2>
+        <div class="panel__eyebrow">怪物图鉴</div>
+        <h2 class="panel__title">已遭遇的敌人</h2>
         <div class="card-list">
           <article
             v-for="enemy in codexEntries"
@@ -51,22 +51,22 @@
             :class="{ 'list-card--locked': !enemy.encountered }"
           >
             <div>
-              <strong>{{ enemy.encountered ? enemy.name : "Unknown enemy" }}</strong>
+              <strong>{{ enemy.encountered ? enemy.name : "未知敌人" }}</strong>
               <p>
-                {{ enemy.encountered ? `${enemy.role} from chapter ${enemy.chapterId}` : "Meet this foe in battle to reveal its notes." }}
+                {{ enemy.encountered ? `第 ${enemy.chapterId} 章的${enemy.displayRole}` : "在战斗中遇见它之后，这里的信息才会解锁。" }}
               </p>
               <small v-if="enemy.encountered">
-                Rewards: {{ enemy.rewardExp }} EXP / {{ enemy.rewardGold }} gold
+                奖励：{{ enemy.rewardExp }} 经验 / {{ enemy.rewardGold }} 金币
               </small>
             </div>
           </article>
         </div>
       </section>
 
-      <!-- Milestones give the player persistent goals outside raw chapter completion. -->
+      <!-- 里程碑给玩家提供主线之外的长期目标。 -->
       <section class="panel panel--wide">
-        <div class="panel__eyebrow">Milestones</div>
-        <h2 class="panel__title">Long-form progress</h2>
+        <div class="panel__eyebrow">里程碑</div>
+        <h2 class="panel__title">长期成长记录</h2>
         <div class="card-list">
           <article
             v-for="card in gameStore.milestoneCards"
@@ -83,10 +83,10 @@
         </div>
       </section>
 
-      <!-- Knowledge atlas doubles as a launchpad for chapter drill sessions. -->
+      <!-- 知识图谱既展示章节知识点，也可以直接发起章节训练。 -->
       <section class="panel">
-        <div class="panel__eyebrow">Knowledge Atlas</div>
-        <h2 class="panel__title">Chapter tags</h2>
+        <div class="panel__eyebrow">知识图谱</div>
+        <h2 class="panel__title">章节标签</h2>
         <div class="card-list">
           <article
             v-for="chapter in chapters"
@@ -111,18 +111,18 @@
                 :disabled="!gameStore.player.unlockedChapters.includes(chapter.id)"
                 @click="openPractice({ mode: 'drill', filter: chapter.id })"
               >
-                Drill chapter
+                训练本章
               </button>
             </div>
           </article>
         </div>
       </section>
 
-      <!-- The wrong-answer book is the direct feed into focused review practice. -->
+      <!-- 错题本是进入专项复盘练习的直接入口。 -->
       <section class="panel panel--wide">
-        <div class="panel__eyebrow">Wrong Answer Book</div>
+        <div class="panel__eyebrow">错题本</div>
         <div class="utility-header utility-header--compact">
-          <h2 class="panel__title">Missed prompts ready for practice</h2>
+          <h2 class="panel__title">可继续练习的错题</h2>
           <div class="page-links">
             <button
               type="button"
@@ -130,7 +130,7 @@
               :disabled="filteredWrongQuestions.length === 0"
               @click="openPractice({ filter: activeFilter })"
             >
-              Practice {{ activeFilter === "all" ? "this backlog" : `Chapter ${activeFilter}` }}
+              {{ activeFilter === "all" ? "练习当前错题" : `练习第 ${activeFilter} 章` }}
             </button>
             <button
               type="button"
@@ -138,7 +138,7 @@
               :disabled="!hasWrongQuestions || activeFilter === 'all'"
               @click="openPractice({ filter: 'all' })"
             >
-              Practice all
+              全部练习
             </button>
           </div>
         </div>
@@ -163,9 +163,9 @@
             :key="entry.id"
             class="list-card list-card--stack"
           >
-            <strong>Q{{ entry.id }} | Chapter {{ entry.chapterId }}</strong>
+            <strong>Q{{ entry.id }} | 第 {{ entry.chapterId }} 章</strong>
             <p>{{ entry.prompt }}</p>
-            <small>Answer: {{ entry.answer }} | Missed {{ entry.count }} time(s)</small>
+            <small>答案：{{ entry.answer }} | 答错 {{ entry.count }} 次</small>
             <p class="muted-copy">{{ entry.explanation }}</p>
           </article>
         </div>
@@ -173,7 +173,7 @@
           v-else
           class="muted-copy"
         >
-          No wrong answers recorded for this filter yet.
+          这个筛选条件下暂时没有错题记录。
         </p>
       </section>
     </section>
@@ -188,31 +188,32 @@ import { chapters } from "../data/chapters";
 import { enemies } from "../data/enemies";
 import { useGameStore } from "../stores/game";
 
-// Handbook aggregates codex, milestones, chapter notes, and wrong-answer review tools.
+// 图鉴页聚合了怪物档案、里程碑、知识点和错题复盘。
 const router = useRouter();
 const gameStore = useGameStore();
 const activeFilter = ref("all");
-// This flag keeps review CTAs disabled until there is backlog to revisit.
+// 没有错题时，相关复盘按钮会自动禁用。
 const hasWrongQuestions = computed(() => gameStore.player.wrongQuestions.length > 0);
 
-// Chapter filters are reused by the wrong-answer book to narrow the review list.
+// 章节筛选器同时服务于错题本和练习入口。
 const filters = [
-  { label: "All", value: "all" },
+  { label: "全部", value: "all" },
   ...chapters.map((chapter) => ({
-    label: `Chapter ${chapter.id}`,
+    label: `第 ${chapter.id} 章`,
     value: chapter.id,
   })),
 ];
 
-// Enrich enemies with encounter state for locked-versus-known codex rendering.
+// 给敌人补上是否已遭遇状态，便于渲染图鉴解锁效果。
 const codexEntries = computed(() =>
   enemies.map((enemy) => ({
     ...enemy,
     encountered: gameStore.encounteredEnemies.includes(enemy.id),
+    displayRole: enemy.role === "Boss" ? "首领" : enemy.role,
   })),
 );
 
-// Filter the wrong-answer book without mutating the stored backlog order.
+// 只做筛选，不改动错题本原本的存储顺序。
 const filteredWrongQuestions = computed(() => {
   if (activeFilter.value === "all") {
     return gameStore.player.wrongQuestions;
@@ -223,7 +224,7 @@ const filteredWrongQuestions = computed(() => {
   );
 });
 
-// Practice routing supports both review mode and explicit chapter drill mode.
+// 练习入口同时支持错题复盘和章节训练两种模式。
 function openPractice({ mode = "review", filter = "all" } = {}) {
   if (mode === "drill" && filter !== "all") {
     router.push({
